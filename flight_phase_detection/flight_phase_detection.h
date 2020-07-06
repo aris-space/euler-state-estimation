@@ -1,4 +1,4 @@
-#include "../util.h"
+#include "util.h"
 #include "../environment/env.h"
 
 #ifndef FLIGHT_PHASE_DETECTION_H_

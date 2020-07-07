@@ -16,26 +16,26 @@
 #define TEMPERATURE_REFERENCE 15 // ISA reference temperature at sea level [K]
 #define PRESSURE_REFERENCE 101325 // ISA reference pressure at sea level [Pa]
 
-typedef struct env {
+typedef struct env_t {
     float p_g; // Pressure on ground level [Pa]
     float T_g; // Temperatur on ground level [K]
 
     float T; // Temperature [K]
     float C; // speed of sound
-} env;
+} env_t;
 
-void init_env(env *env);
+void init_env(env_t *env);
 
-void calibrate_env(env *env, float p_g, float T_g);
+void calibrate_env(env_t *env, float p_g, float T_g);
 
-void update_env(env *env, float T);
+void update_env(env_t *env, float T);
 
-float mach_number(env *env, float V_x);
+float mach_number(env_t *env, float V_x);
 
-void pressure2altitudeAGL(env *env, int n, float p[n], bool p_active[n], float h[n]);
+void pressure2altitudeAGL(env_t *env, int n, float p[n], bool p_active[n], float h[n]);
 
-void altitudeAGL2pressure(env *env, int n, float h[n], bool h_active[n], float p[n]);
+void altitudeAGL2pressure(env_t *env, int n, float h[n], bool h_active[n], float p[n]);
 
-float altitude_gradient(env *env, float p);
+float altitude_gradient(env_t *env, float p);
 
 #endif

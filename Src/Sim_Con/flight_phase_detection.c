@@ -1,6 +1,6 @@
-#include "flight_phase_detection.h"
+#include "../../Inc/Sim_Con/flight_phase_detection.h"
 
-void detect_flight_phase(flight_phase_detection_t *flight_phase_detection, state_est_data_t *state_est_data, env *env)
+void detect_flight_phase(flight_phase_detection_t *flight_phase_detection, state_est_data_t *state_est_data, env_t *env)
 {   
 
 

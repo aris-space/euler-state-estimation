@@ -1,4 +1,4 @@
-#include "../math_utils.h"
+#include "../Util/math_utils.h"
 #include "state_est_const.h"
 #include <string.h>
 #include <stdbool.h>
@@ -14,7 +14,7 @@
 #define NUMBER_MEASUREMENTS NUM_BARO /* NUMBER_MEASUREMENTS x NUMBER_STATES -> H Matrix */
 #define LAMBDA 0.0001		/* Lambda for Moore Penrose Pseudoinverse */
 
-typedef struct kf_state{
+typedef struct kf_state_t{
 	/* Fixed Variables */
     float Ad[NUMBER_STATES][NUMBER_STATES];
 	float Ad_T[NUMBER_STATES][NUMBER_STATES];
@@ -57,12 +57,12 @@ typedef struct kf_state{
 	float Placeholder_S_inv_3[NUMBER_MEASUREMENTS][NUMBER_STATES];
 	float Placeholder_R_inv_mult_H[NUMBER_MEASUREMENTS][NUMBER_STATES];
 	float Placeholder_H_T_mult_R_inv[NUMBER_STATES][NUMBER_MEASUREMENTS];
-} kf_state;
+} kf_state_t;
 
 /* Here, the Matrices are declared */
-void reset_kf_state(kf_state *kf_state);
-void kf_prediction(kf_state *kf_state);
-void select_kf_observation_matrices(kf_state *kf_state);
-void kf_update(kf_state *kf_state);
+void reset_kf_state(kf_state_t *kf_state);
+void kf_prediction(kf_state_t *kf_state);
+void select_kf_observation_matrices(kf_state_t *kf_state);
+void kf_update(kf_state_t *kf_state);
 
 #endif

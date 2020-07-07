@@ -1,27 +1,27 @@
-#include "env.h"
+#include "../../Inc/Sim_Con/env.h"
 
-void init_env(env *env) {
+void init_env(env_t *env) {
 	/* init constants */
 	calibrate_env(env, PRESSURE_REFERENCE, TEMPERATURE_REFERENCE);
 	update_env(env, TEMPERATURE_REFERENCE);
 }
 
-void calibrate_env(env *env, float p_g, float T_g) {
+void calibrate_env(env_t *env, float p_g, float T_g) {
 	env->T_g = T_g + T_0; // input is temperature in °C
 	env->p_g = p_g; //
 }
 
-void update_env(env *env, float T) {
+void update_env(env_t *env, float T) {
 	env->T = T + T_0; // input is temperature in °C and property is temperature in °K
 	env->C = powf(GAMMA * R_0 * env->T, 0.5);
 }
 
-float mach_number(env *env, float V_x) {
+float mach_number(env_t *env, float V_x) {
 	float mach_number = fabsf(V_x) / env->C;
 	return mach_number;
 }
 
-void pressure2altitudeAGL(env *env, int n, float p[n], bool p_active[n], float h[n]) {
+void pressure2altitudeAGL(env_t *env, int n, float p[n], bool p_active[n], float h[n]) {
 	for (int i = 0; i < n; i++) {
 		if (p_active[i]) {
 			/* original implementation */
@@ -32,7 +32,7 @@ void pressure2altitudeAGL(env *env, int n, float p[n], bool p_active[n], float h
 	}
 }
 
-void altitudeAGL2pressure(env *env, int n, float h[n], bool h_active[n], float p[n]) {
+void altitudeAGL2pressure(env_t *env, int n, float h[n], bool h_active[n], float p[n]) {
 	for (int i = 0; i < n; i++) {
 		if (h_active[i]) {
 			/* original implementation */
@@ -43,7 +43,7 @@ void altitudeAGL2pressure(env *env, int n, float h[n], bool h_active[n], float p
 	}
 }
 
-float altitude_gradient(env *env, float p) {
+float altitude_gradient(env_t *env, float p) {
 	/* computes the altitude gradient per infitesimal change in pressure (dh/dp) at a specified pressure */
 	/* original implementation */
 	float h_grad = -R_0 * env->T_g / (GRAVITATION * env->p_g) * powf(p / env->p_g, R_0 * T_GRAD / GRAVITATION - 1);

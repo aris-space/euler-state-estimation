@@ -1,6 +1,6 @@
-#include "kf.h"
+#include "../../Inc/Sim_Con/kf.h"
 
-void reset_kf_state(kf_state *kf_state){
+void reset_kf_state(kf_state_t *kf_state){
     if (STATE_ESTIMATION_FREQUENCY == 1000) {
         float A_init[NUMBER_STATES][NUMBER_STATES] = {{1.0E-0, 1.0E-3, 5.0E-7}, {0, 1.0E-0, 1.0E-3}, {0.0, 0.0, 1.0E-0}};
         float B_init[NUMBER_STATES][NUMBER_INPUTS] = {{5.0E-7}, {1.0E-3}, {0.0}};
@@ -59,7 +59,7 @@ void reset_kf_state(kf_state *kf_state){
     transpose(NUMBER_STATES, NUMBER_PROCESS_NOISE, kf_state->Gd, kf_state->Gd_T);
 }
 
-void kf_prediction(kf_state *kf_state){
+void kf_prediction(kf_state_t *kf_state){
     /* Prediction Step */
     /* Calculation of x_priori */
     matvecprod(NUMBER_STATES, NUMBER_STATES, kf_state->Ad, kf_state->x_est, kf_state->x_priori, true);
@@ -74,7 +74,7 @@ void kf_prediction(kf_state *kf_state){
     matmul(NUMBER_STATES, NUMBER_PROCESS_NOISE, NUMBER_STATES, kf_state->Placeholder_Gd_mult_Q, kf_state->Gd_T, kf_state->P_priori, false);
 }
 
-void select_kf_observation_matrices(kf_state *kf_state){
+void select_kf_observation_matrices(kf_state_t *kf_state){
     memset(kf_state->H, 0, NUMBER_MEASUREMENTS*NUMBER_STATES*sizeof(kf_state->H[0][0]));
 
     for(int i = 0; i < NUMBER_MEASUREMENTS; i++){
@@ -90,7 +90,7 @@ void select_kf_observation_matrices(kf_state *kf_state){
     transpose(NUMBER_MEASUREMENTS, NUMBER_STATES, kf_state->H, kf_state->H_T);
 }
 
-void kf_update(kf_state *kf_state) {
+void kf_update(kf_state_t *kf_state) {
     /* Update Step */
     /* y = z - H * x_priori */
     matvecprod(NUMBER_MEASUREMENTS, NUMBER_STATES, kf_state->H, kf_state->x_priori, kf_state->y, true);

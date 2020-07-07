@@ -1,4 +1,4 @@
-#include "math_utils.h"
+#include "../../Inc/Util/math_utils.h"
 
 
 void eye(int dim, float A[dim][dim]) {

@@ -1,7 +1,8 @@
-#include "state_est.h"
+#include "../../Inc/Sim_Con/state_est.h"
+
 
 void calibrate_state_est(float p_g, float T_g, flight_phase_detection_t *flight_phase_detection, state_est_data_t *state_est_data, 
-                         env *env, kf_state *kf_state, extrapolation_rolling_memory *baro_roll_mem) {
+                         env_t *env, kf_state_t *kf_state, extrapolation_rolling_memory_t *baro_roll_mem) {
     /* this function is used to reset the state estimation */
     /* !! It needs to be called after resetting the flight phase detection */
     
@@ -19,7 +20,7 @@ void calibrate_state_est(float p_g, float T_g, flight_phase_detection_t *flight_
     select_noise_models(kf_state, flight_phase_detection, env, baro_roll_mem);
 }
 
-void update_state_est_data(state_est_data_t *state_est_data, kf_state *kf_state) {
+void update_state_est_data(state_est_data_t *state_est_data, kf_state_t *kf_state) {
     state_est_data->position_world[2] = (int32_t)(kf_state->x_est[0] * 1000);
     state_est_data->velocity_rocket[0] = (int32_t)(kf_state->x_est[1] * 1000);
     state_est_data->velocity_world[2] = (int32_t)(kf_state->x_est[1] * 1000);
@@ -27,8 +28,8 @@ void update_state_est_data(state_est_data_t *state_est_data, kf_state *kf_state)
     state_est_data->acceleration_world[2] = (int32_t)(kf_state->u[0] * 1000);
 }
 
-void process_measurements(timestamp_t t, kf_state *kf_state, state_est_meas_t *state_est_meas, state_est_meas_t *state_est_meas_prior, 
-                          env *env, extrapolation_rolling_memory *baro_roll_mem) {
+void process_measurements(timestamp_t t, kf_state_t *kf_state, state_est_meas_t *state_est_meas, state_est_meas_t *state_est_meas_prior,
+                          env_t *env, extrapolation_rolling_memory_t *baro_roll_mem) {
     float temp_meas[NUM_SENSORBOARDS];
     bool temp_meas_active[NUM_SENSORBOARDS];
     float acc_x_meas[NUM_SENSORBOARDS];
@@ -115,8 +116,8 @@ void process_measurements(timestamp_t t, kf_state *kf_state, state_est_meas_t *s
     }
 } 
 
-void select_noise_models(kf_state *kf_state, flight_phase_detection_t *flight_phase_detection, env *env,
-                        extrapolation_rolling_memory *baro_roll_mem){
+void select_noise_models(kf_state_t *kf_state, flight_phase_detection_t *flight_phase_detection, env_t *env,
+                        extrapolation_rolling_memory_t *baro_roll_mem){
     float accelerometer_x_stdev;
     float barometer_stdev;
 
@@ -200,7 +201,7 @@ void sensor_elimination_by_stdev(int n, float measurements[n], bool measurement_
 }
 
 void sensor_elimination_by_extrapolation(timestamp_t t, int n, float measurements[n], bool measurement_active[n], 
-                                         extrapolation_rolling_memory *extrapolation_rolling_memory){
+                                         extrapolation_rolling_memory_t *extrapolation_rolling_memory){
     float x_priori = 0;
     /* we only extrapolate if the memory is fully populated. Otherwise we dont eliminate sensor and fill the memory */
     if (extrapolation_rolling_memory->memory_length >= MAX_LENGTH_ROLLING_MEMORY) {

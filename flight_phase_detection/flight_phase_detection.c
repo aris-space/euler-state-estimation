@@ -37,7 +37,7 @@ void detect_flight_phase(flight_phase_detection_t *flight_phase_detection, state
         break;
 
         case DESCENT:
-            /* we assume a ballistic descent when the absolute velocity of the rocket in flight direction is larger than 40 m/s */
+            /* we assume a ballistic descent when the absolute velocity of the rocket in vertical direction is larger than 40 m/s */
             if (fabs(((float)(state_est_data->velocity_world[2])) / 1000) > 40) {
                 flight_phase_detection->num_samples_positive += 1;
                 if (flight_phase_detection->num_samples_positive >= 4) {
@@ -62,6 +62,14 @@ void detect_flight_phase(flight_phase_detection_t *flight_phase_detection, state
                 flight_phase_detection->num_samples_positive += 1;
                 if (flight_phase_detection->num_samples_positive >= 4) {
                     flight_phase_detection->flight_phase = RECOVERY;
+                    flight_phase_detection->num_samples_positive = 0;
+                }
+            }
+            /* we assume a normal descent with parachute when the absolute velocity of the rocket in vertical direction is smaller than 40 m/s */
+            else if (fabs(((float)(state_est_data->velocity_world[2])) / 1000) < 40) {
+                flight_phase_detection->num_samples_positive += 1;
+                if (flight_phase_detection->num_samples_positive >= 4) {
+                    flight_phase_detection->flight_phase = DESCENT;
                     flight_phase_detection->num_samples_positive = 0;
                 }
             }

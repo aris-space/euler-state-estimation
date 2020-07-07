@@ -140,6 +140,10 @@ void select_noise_models(kf_state *kf_state, flight_phase_detection_t *flight_ph
             accelerometer_x_stdev = 1.955133;
             barometer_stdev = 3.896;
         break;
+        case BALLISTIC_DESCENT:
+            accelerometer_x_stdev = 0.61803;
+            barometer_stdev = 7.380;
+        break;
     }
 
     for(int i = 0; i < NUMBER_PROCESS_NOISE; i++){

@@ -10,6 +10,7 @@ enum flight_phase_e {
     THRUSTING = 10,
     COASTING = 11,
     DESCENT = 15,
+    BALLISTIC_DESCENT = 16,
     RECOVERY = 20,
 };
 

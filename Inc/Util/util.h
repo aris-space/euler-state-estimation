@@ -10,6 +10,11 @@
 
 //#include "cmsis_os.h"
 
+/* as we don't include cmsis_os.h, we need to define some datatypes ourselves */
+typedef u_int8_t uint8_t;
+typedef u_int16_t uint16_t;
+typedef u_int32_t uint32_t;
+
 /** BASIC TYPES **/
 
 /* Timestamp */
@@ -31,7 +36,7 @@ typedef struct {
 
 /* Rocket state */
 typedef enum {
-	IDLE = 1, AIRBRAKE_TEST, THRUSTING, COASTING, DESCENT, RECOVERY
+	IDLE = 1, AIRBRAKE_TEST, THRUSTING, COASTING, DESCENT, BALLISTIC_DESCENT, RECOVERY
 } flight_phase_e;
 
 /* Mach Regime */

@@ -8,7 +8,7 @@
 #ifndef INC_UTIL_UTIL_H_
 #define INC_UTIL_UTIL_H_
 
-#include "cmsis_os.h"
+//#include "cmsis_os.h"
 
 /** BASIC TYPES **/
 
@@ -146,10 +146,10 @@ typedef struct {
 } telemetry_t;
 
 /* Sensor Board Mutexes */
-typedef struct{
-	osMutexId_t mutex;
-	uint32_t counter;
-} custom_mutex_t;
+//typedef struct{
+//	osMutexId_t mutex;
+//	uint32_t counter;
+//} custom_mutex_t;
 
 
 static const command_xbee_t IDLE_XBEE_DATA = {{ IDLE_COMMAND, IDLE_COMMAND, IDLE_COMMAND, IDLE_COMMAND }};
@@ -161,21 +161,23 @@ static const imu_data_t EMPTY_IMU = { 0 };
 #define LOG_BUFFER_LEN 150
 
 #define LOG_QUEUE_SIZE 128
-extern osMessageQueueId_t log_queue;
+//extern osMessageQueueId_t log_queue;
 
 typedef struct {
 	char str[LOG_BUFFER_LEN];
 } log_entry_t;
 
+/*
 osStatus_t logSensor(timestamp_t ts, board_id_t sensor_board_id,
 		sensor_type_e sens_type, void *sensor_data);
 osStatus_t logRocketState(timestamp_t ts, flight_phase_detection_t flight_phase_detection);
-/* TODO [nstojosk] - this signature & implementation should be adjusted */
+/* TODO [nstojosk] - this signature & implementation should be adjusted 
 osStatus_t logEstimatorVar(timestamp_t ts, state_est_data_t estimator_data);
 osStatus_t logControllerOutput(timestamp_t ts, int32_t controller_output, int32_t reference_error,
 		int32_t integrated_error);
 osStatus_t logMotor(timestamp_t ts, int32_t desired_position, int32_t actual_position);
 osStatus_t logMsg(timestamp_t ts, char *msg);
+*/
 
 /* USB Fake data insert */
 
@@ -190,7 +192,7 @@ osStatus_t logMsg(timestamp_t ts, char *msg);
 #endif
 /* Comment the next line in order to disable debug mode */
 //#define DEBUG
-
+/*
 #ifdef DEBUG
 osMutexId_t print_mutex;
 #define PRINT_BUFFER_LEN 200
@@ -198,5 +200,5 @@ char print_buffer[PRINT_BUFFER_LEN];
 #endif
 
 uint8_t UsbPrint(const char *format, ...);
-
+*/
 #endif /* INC_UTIL_UTIL_H_ */

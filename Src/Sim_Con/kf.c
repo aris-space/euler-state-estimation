@@ -29,6 +29,13 @@ void reset_kf_state(kf_state_t *kf_state){
         memcpy(kf_state->Ad, A_init, sizeof(kf_state->Ad));
         memcpy(kf_state->Bd, B_init, sizeof(kf_state->Bd));
         memcpy(kf_state->Gd, G_init, sizeof(kf_state->Gd));
+    } else if (STATE_ESTIMATION_FREQUENCY == 33.33) { 
+        float A_init[NUMBER_STATES][NUMBER_STATES] = {{1.0E-0, 3.003E-2, 4.5009E-4}, {0, 1.0E-0, 3.003E-2}, {0.0, 0.0, 1.0E-0}};
+        float B_init[NUMBER_STATES][NUMBER_INPUTS] = {{4.5009E-4}, {3.003E-2}, {0.0}};
+        float G_init[NUMBER_STATES][NUMBER_PROCESS_NOISE] = {{4.5009E-4}, {3.003E-2}, {0.0}};
+        memcpy(kf_state->Ad, A_init, sizeof(kf_state->Ad));
+        memcpy(kf_state->Bd, B_init, sizeof(kf_state->Bd));
+        memcpy(kf_state->Gd, G_init, sizeof(kf_state->Gd));
     } else if (STATE_ESTIMATION_FREQUENCY == 1) { 
         float A_init[NUMBER_STATES][NUMBER_STATES] = {{1.0E-0, 1.0E-0, 5.0E-1}, {0, 1.0E-0, 1.0E-0}, {0.0, 0.0, 1.0E-0}};
         float B_init[NUMBER_STATES][NUMBER_INPUTS] = {{5.0E-1}, {1.0E-0}, {0.0}};

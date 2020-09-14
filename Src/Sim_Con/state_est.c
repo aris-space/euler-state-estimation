@@ -1,23 +1,51 @@
 #include "../../Inc/Sim_Con/state_est.h"
 
+void reset_state_est_state(float p_g, float T_g, state_est_state_t *state_est_state) {
+    reset_flight_phase_detection(&state_est_state->flight_phase_detection);
 
-void calibrate_state_est(float p_g, float T_g, flight_phase_detection_t *flight_phase_detection, state_est_data_t *state_est_data, 
-                         env_t *env, kf_state_t *kf_state, extrapolation_rolling_memory_t *baro_roll_mem) {
-    /* this function is used to reset the state estimation */
-    /* !! It needs to be called after resetting the flight phase detection */
-    
-    init_env(env);
-    calibrate_env(env, p_g, T_g);
-	update_env(env, T_g);
+    memset(&state_est_state->state_est_data, 0, sizeof(state_est_state->state_est_data));
+    memset(&state_est_state->state_est_meas, 0, sizeof(state_est_state->state_est_meas));
+    memset(&state_est_state->state_est_meas_prior, 0, sizeof(state_est_state->state_est_meas_prior));
 
-    reset_kf_state(kf_state);
+    init_env(&state_est_state->env);
+    calibrate_env(&state_est_state->env, p_g, T_g);
+    update_env(&state_est_state->env, T_g);
 
-    update_state_est_data(state_est_data, kf_state);
+	reset_kf_state(&state_est_state->kf_state);
+    update_state_est_data(&state_est_state->state_est_data, &state_est_state->kf_state);
 
-    /* reset the rolling memory of the barometer data */
-    baro_roll_mem->memory_length = 0;
+    memset(&state_est_state->baro_roll_mem, 0, sizeof(state_est_state->baro_roll_mem));
 
-    select_noise_models(kf_state, flight_phase_detection, env, baro_roll_mem);
+	select_noise_models(&state_est_state->kf_state, &state_est_state->flight_phase_detection, 
+                        &state_est_state->env, &state_est_state->baro_roll_mem);
+}
+
+void state_est_step(timestamp_t t, state_est_state_t *state_est_state, bool bool_detect_flight_phase) {
+    /* process measurements */
+	process_measurements(t, &state_est_state->kf_state, &state_est_state->state_est_meas, &state_est_state->state_est_meas_prior, 
+                         &state_est_state->env, &state_est_state->baro_roll_mem);
+
+	/* select noise models (dependent on detected flight phase and updated temperature in environment) */
+	select_noise_models(&state_est_state->kf_state, &state_est_state->flight_phase_detection,
+                        &state_est_state->env, &state_est_state->baro_roll_mem);
+	
+	kf_prediction(&state_est_state->kf_state);
+
+	if (state_est_state->kf_state.num_z_active > 0) {
+		select_kf_observation_matrices(&state_est_state->kf_state);
+		kf_update(&state_est_state->kf_state);
+	} else {
+		memcpy(&state_est_state->kf_state.x_est, &state_est_state->kf_state.x_priori, sizeof(state_est_state->kf_state.x_priori));
+	}
+
+	update_state_est_data(&state_est_state->state_est_data, &state_est_state->kf_state);
+
+    if (bool_detect_flight_phase){
+        detect_flight_phase(&state_est_state->flight_phase_detection, &state_est_state->state_est_data, &state_est_state->env);
+    }
+
+	/* set measurement prior to measurements from completed state estimation step */
+	memcpy(&state_est_state->state_est_meas_prior, &state_est_state->state_est_meas, sizeof(state_est_state->state_est_meas));
 }
 
 void update_state_est_data(state_est_data_t *state_est_data, kf_state_t *kf_state) {

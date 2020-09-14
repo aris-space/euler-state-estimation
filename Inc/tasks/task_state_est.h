@@ -14,6 +14,7 @@
 #include "Sim_Con/flight_phase_detection.h"
 #include "Sim_Con/state_est_settings.h"
 #include "Sim_Con/state_est.h"
+#include "Sim_Con/state_est_const.h"
 #include "cmsis_os.h"
 #include <stdio.h>
 #include <math.h>

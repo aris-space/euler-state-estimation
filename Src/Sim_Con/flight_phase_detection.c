@@ -14,6 +14,13 @@ void detect_flight_phase(flight_phase_detection_t *flight_phase_detection, state
                     flight_phase_detection->num_samples_positive = 0;
                 }
             }
+            if (((float)(state_est_data->position_world[2])) / 1000 > 80) {
+                flight_phase_detection->num_samples_positive += 1;
+                if (flight_phase_detection->num_samples_positive >= 4) {
+                    flight_phase_detection->flight_phase = THRUSTING;
+                    flight_phase_detection->num_samples_positive = 0;
+                }
+            }
         break;
 
         case THRUSTING:
@@ -38,7 +45,7 @@ void detect_flight_phase(flight_phase_detection_t *flight_phase_detection, state
 
         case DESCENT:
             /* we assume a ballistic descent when the absolute velocity of the rocket in vertical direction is larger than 40 m/s */
-            if (fabs(((float)(state_est_data->velocity_world[2])) / 1000) > 40) {
+            if (fabs(((float)(state_est_data->velocity_world[2])) / 1000) > 60) {
                 flight_phase_detection->num_samples_positive += 1;
                 if (flight_phase_detection->num_samples_positive >= 4) {
                     flight_phase_detection->flight_phase = BALLISTIC_DESCENT;
@@ -57,8 +64,9 @@ void detect_flight_phase(flight_phase_detection_t *flight_phase_detection, state
         break;
 
         case BALLISTIC_DESCENT:
-            /* we assume a touchdown event when absolute velocity of the rocket is smaller than 2 m/s */
-            if (fabs(((float)(state_est_data->velocity_rocket[0])) / 1000) < 2) {
+            /* we assume a touchdown event when the absolute value of the altitude is smaller than 500m 
+               and the absolute velocity of the rocket is smaller than 2 m/s */
+            if (fabs(((float)(state_est_data->velocity_rocket[0])) / 1000) < 2 && fabs(((float)(state_est_data->position_world[2])) / 1000) < 500) {
                 flight_phase_detection->num_samples_positive += 1;
                 if (flight_phase_detection->num_samples_positive >= 4) {
                     flight_phase_detection->flight_phase = RECOVERY;

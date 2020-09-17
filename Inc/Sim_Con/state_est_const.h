@@ -11,15 +11,23 @@
 #define USE_SENSOR_ELIMINATION_BY_EXTRAPOLATION 0 // set to 1 to activate sensor elimination by extrapolation for barometer and temperature
 #define EXTRAPOLATION_POLYFIT_DEGREE 2
 
+/** BASIC TYPES **/
+#ifdef RECOVERY
+#include "main.h"
+#endif
+
+#ifdef AVIONICS
+#include "../Util/util.h"
+#endif
+
+#ifdef SIMCON
 /* as we don't include cmsis_os.h, we need to define some datatypes ourselves */
 typedef u_int8_t uint8_t;
 typedef u_int16_t uint16_t;
 typedef u_int32_t uint32_t;
-
-/** BASIC TYPES **/
-
 /* Timestamp */
 typedef uint32_t timestamp_t;
+#endif
 
 typedef enum {
 	IDLE = 1, AIRBRAKE_TEST, THRUSTING, COASTING, DESCENT, BALLISTIC_DESCENT, RECOVERY

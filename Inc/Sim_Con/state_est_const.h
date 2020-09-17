@@ -1,5 +1,3 @@
-#include "../Util/util.h"
-
 #ifndef STATE_EST_CONST_H
 #define STATE_EST_CONST_H
 
@@ -13,6 +11,24 @@
 #define USE_SENSOR_ELIMINATION_BY_EXTRAPOLATION 0 // set to 1 to activate sensor elimination by extrapolation for barometer and temperature
 #define EXTRAPOLATION_POLYFIT_DEGREE 2
 
+/* as we don't include cmsis_os.h, we need to define some datatypes ourselves */
+typedef u_int8_t uint8_t;
+typedef u_int16_t uint16_t;
+typedef u_int32_t uint32_t;
+
+/** BASIC TYPES **/
+
+/* Timestamp */
+typedef uint32_t timestamp_t;
+
+typedef enum {
+	IDLE = 1, AIRBRAKE_TEST, THRUSTING, COASTING, DESCENT, BALLISTIC_DESCENT, RECOVERY
+} flight_phase_e;
+
+/* Mach Regime */
+typedef enum {
+	SUBSONIC = 1, TRANSONIC, SUPERSONIC
+} mach_regime_e;
 
 typedef struct {
 	float pressure;
@@ -34,5 +50,22 @@ typedef struct {
     /* all in rocket frame where x-dir is along length of rocket */
 	imu_state_est_t imu_data[NUM_SENSORBOARDS];
 } state_est_meas_t;
+
+/* State Estimation Output */
+typedef struct {
+	int32_t position_world[3];
+	int32_t velocity_rocket[3];
+	int32_t acceleration_rocket[3];
+	int32_t velocity_world[3];
+	int32_t acceleration_world[3];
+} state_est_data_t;
+
+/* FSM States */
+typedef struct {
+	flight_phase_e flight_phase;
+	mach_regime_e mach_regime;
+	float mach_number;
+	int8_t num_samples_positive;
+} flight_phase_detection_t;
 
 #endif

@@ -19,8 +19,19 @@ typedef struct extrapolation_rolling_memory_t {
     double polyfit_coeffs[EXTRAPOLATION_POLYFIT_DEGREE+1]; /* array size needs to be the degree of the polyfit plus 1 */
 } extrapolation_rolling_memory_t;
 
-void calibrate_state_est(float p_g, float T_g, flight_phase_detection_t *flight_phase_detection, state_est_data_t *state_est_data, 
-						env_t *env, kf_state_t *kf_state, extrapolation_rolling_memory_t *baro_roll_mem);
+typedef struct state_est_state_t {
+    state_est_data_t state_est_data;
+    state_est_meas_t state_est_meas;
+    state_est_meas_t state_est_meas_prior;
+    kf_state_t kf_state;
+    env_t env;
+    flight_phase_detection_t flight_phase_detection;
+    extrapolation_rolling_memory_t baro_roll_mem;
+} state_est_state_t;
+
+void reset_state_est_state(float p_g, float T_g, state_est_state_t *state_est_state);
+
+void state_est_step(timestamp_t t, state_est_state_t *state_est_state, bool bool_detect_flight_phase);
 
 void update_state_est_data(state_est_data_t *state_est_data, kf_state_t *kf_state);
 

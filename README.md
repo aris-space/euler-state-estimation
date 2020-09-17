@@ -3,12 +3,9 @@
 The following steps need to be taken to use the state estimation:
 
 1. Include headers
-Define either `SIMCON` for Simulations & Control, `AVIONICS` or `RECOVERY` to tune the includes and typedefinitions:
+Define either `EULER_SIMCON` for Simulations & Control, `EULER_AVIONICS` or `EULER_RECOVERY` to tune the includes and typedefinitions:
 ```
-#define SIMCON 1
-```
-
-```
+#define EULER_SIMCON 1
 #include "euler_state_estimation/Inc/Sim_Con/state_est_const.h"
 #include "euler_state_estimation/Src/Sim_Con/state_est.c"
 ```

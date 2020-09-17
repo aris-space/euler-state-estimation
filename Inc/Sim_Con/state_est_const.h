@@ -12,15 +12,16 @@
 #define EXTRAPOLATION_POLYFIT_DEGREE 2
 
 /** BASIC TYPES **/
-#ifdef RECOVERY
+#ifdef EULER_REC
 #include "main.h"
+typedef uint32_t timestamp_t;
 #endif
 
-#ifdef AVIONICS
+#ifdef EULER_AV
 #include "../Util/util.h"
 #endif
 
-#ifdef SIMCON
+#ifdef EULER_SIMCON
 /* as we don't include cmsis_os.h, we need to define some datatypes ourselves */
 typedef u_int8_t uint8_t;
 typedef u_int16_t uint16_t;

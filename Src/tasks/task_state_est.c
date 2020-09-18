@@ -94,7 +94,7 @@ void vTaskStateEst(void *argument) {
 
 		/* Update global State Estimation Data */
 		if (AcquireMutex(&state_est_mutex) == osOK) {
-			update_state_est_data(&state_est_data_global, &state_est_state->kf_state);
+			update_state_est_data(&state_est_data_global, &state_est_state->kf_state, &state_est_state->env);
 			ReleaseMutex(&state_est_mutex);
 		}
 

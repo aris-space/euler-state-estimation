@@ -1,6 +1,6 @@
 #include "../../Inc/Sim_Con/flight_phase_detection.h"
 
-void detect_flight_phase(flight_phase_detection_t *flight_phase_detection, state_est_data_t *state_est_data, env_t *env)
+void detect_flight_phase(flight_phase_detection_t *flight_phase_detection, state_est_data_t *state_est_data)
 {   
 
 
@@ -87,7 +87,7 @@ void detect_flight_phase(flight_phase_detection_t *flight_phase_detection, state
         break;
     }
 
-    flight_phase_detection->mach_number = mach_number(env, ((float) state_est_data->velocity_rocket[0]) / 1000);
+    flight_phase_detection->mach_number = (float)(state_est_data->mach_number) / 1000000;
 
     /* determine the mach regime */
     if (flight_phase_detection->mach_number >= 1.3) {

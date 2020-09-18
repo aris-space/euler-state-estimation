@@ -59,6 +59,7 @@ typedef struct {
 	int32_t acceleration_rocket[3];
 	int32_t velocity_world[3];
 	int32_t acceleration_world[3];
+	int32_t mach_number;
 } state_est_data_t;
 
 /* FSM States */

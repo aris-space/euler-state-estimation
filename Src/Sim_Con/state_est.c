@@ -22,8 +22,7 @@ void reset_state_est_state(float p_g, float T_g, state_est_state_t *state_est_st
 
 void state_est_step(timestamp_t t, state_est_state_t *state_est_state, bool bool_detect_flight_phase) {
     /* process measurements */
-	process_measurements(t, &state_est_state->kf_state, &state_est_state->state_est_meas, &state_est_state->state_est_meas_prior, 
-                         &state_est_state->env, &state_est_state->baro_roll_mem);
+	process_measurements(t, state_est_state);
 
 	/* select noise models (dependent on detected flight phase and updated temperature in environment) */
 	select_noise_models(&state_est_state->kf_state, &state_est_state->flight_phase_detection,
@@ -57,8 +56,7 @@ void update_state_est_data(state_est_data_t *state_est_data, kf_state_t *kf_stat
     state_est_data->mach_number = (int32_t)(mach_number(env, kf_state->x_est[1]) * 1000000);
 }
 
-void process_measurements(timestamp_t t, kf_state_t *kf_state, state_est_meas_t *state_est_meas, state_est_meas_t *state_est_meas_prior,
-                          env_t *env, extrapolation_rolling_memory_t *baro_roll_mem) {
+void process_measurements(timestamp_t t, state_est_state_t *state_est_state) {
     float temp_meas[NUM_SENSORBOARDS];
     bool temp_meas_active[NUM_SENSORBOARDS];
     float acc_x_meas[NUM_SENSORBOARDS];
@@ -66,23 +64,23 @@ void process_measurements(timestamp_t t, kf_state_t *kf_state, state_est_meas_t 
 
     for (int i = 0; i < NUM_SENSORBOARDS; i++){
         /* barometer */
-        if (state_est_meas->baro_data[i].ts > state_est_meas_prior->baro_data[i].ts) {
-            kf_state->z[i] = state_est_meas->baro_data[i].pressure;
-            kf_state->z_active[i] = true;
+        if (state_est_state->state_est_meas.baro_data[i].ts > state_est_state->state_est_meas_prior.baro_data[i].ts) {
+            state_est_state->kf_state.z[i] = state_est_state->state_est_meas.baro_data[i].pressure;
+            state_est_state->kf_state.z_active[i] = true;
 
-            temp_meas[i] = state_est_meas->baro_data[i].temperature;
+            temp_meas[i] = state_est_state->state_est_meas.baro_data[i].temperature;
             temp_meas_active[i] = true;
         } else {
-            kf_state->z[i] = 0;
-            kf_state->z_active[i] = false;
+            state_est_state->kf_state.z[i] = 0;
+            state_est_state->kf_state.z_active[i] = false;
 
             temp_meas[i] = 0;
             temp_meas_active[i] = false;
         }
 
         /* imu */
-        if (state_est_meas->imu_data[i].ts > state_est_meas_prior->imu_data[i].ts) {
-            acc_x_meas[i] = state_est_meas->imu_data[i].acc_x;
+        if (state_est_state->state_est_meas.imu_data[i].ts > state_est_state->state_est_meas_prior.imu_data[i].ts) {
+            acc_x_meas[i] = state_est_state->state_est_meas.imu_data[i].acc_x;
             acc_x_meas_active[i] = true;
         } else {
             acc_x_meas[i] = 0;
@@ -92,12 +90,12 @@ void process_measurements(timestamp_t t, kf_state_t *kf_state, state_est_meas_t 
 
     /* eliminate barometer measurements */
     if (USE_SENSOR_ELIMINATION_BY_EXTRAPOLATION == 1) {
-        if (baro_roll_mem->memory_length < MAX_LENGTH_ROLLING_MEMORY) {
-            sensor_elimination_by_stdev(NUMBER_MEASUREMENTS, kf_state->z, kf_state->z_active);
+        if (state_est_state->baro_roll_mem.memory_length < MAX_LENGTH_ROLLING_MEMORY) {
+            sensor_elimination_by_stdev(NUMBER_MEASUREMENTS, state_est_state->kf_state.z, state_est_state->kf_state.z_active);
         }
-        sensor_elimination_by_extrapolation(t, NUMBER_MEASUREMENTS, kf_state->z, kf_state->z_active, baro_roll_mem);
+        sensor_elimination_by_extrapolation(t, NUMBER_MEASUREMENTS, state_est_state->kf_state.z, state_est_state->kf_state.z_active, &state_est_state->baro_roll_mem);
     } else {
-        sensor_elimination_by_stdev(NUMBER_MEASUREMENTS, kf_state->z, kf_state->z_active);
+        sensor_elimination_by_stdev(NUMBER_MEASUREMENTS, state_est_state->kf_state.z, state_est_state->kf_state.z_active);
     }
 
     /* eliminate temperature measurements */
@@ -107,7 +105,7 @@ void process_measurements(timestamp_t t, kf_state_t *kf_state, state_est_meas_t 
     sensor_elimination_by_stdev(NUMBER_MEASUREMENTS, acc_x_meas, acc_x_meas_active);
 
     /* update num_z_active */
-    kf_state->num_z_active = 0;
+    state_est_state->kf_state.num_z_active = 0;
     /* take the average of the active accelerometers in rocket-x dir as the state estimation input */
     float u = 0;
     int num_acc_x_meas_active = 0;
@@ -117,8 +115,8 @@ void process_measurements(timestamp_t t, kf_state_t *kf_state, state_est_meas_t 
     int num_temp_meas_active = 0;
     
     for (int i = 0; i < NUMBER_MEASUREMENTS; i++){
-        if (kf_state->z_active[i]){
-            kf_state->num_z_active += 1;
+        if (state_est_state->kf_state.z_active[i]){
+            state_est_state->kf_state.num_z_active += 1;
         }
         if (acc_x_meas_active[i]) {
             u += acc_x_meas[i];
@@ -130,18 +128,32 @@ void process_measurements(timestamp_t t, kf_state_t *kf_state, state_est_meas_t 
         }
     }
 
-    pressure2altitudeAGL(env, NUMBER_MEASUREMENTS, kf_state->z, kf_state->z_active, kf_state->z);
+    pressure2altitudeAGL(&state_est_state->env, NUMBER_MEASUREMENTS, state_est_state->kf_state.z, state_est_state->kf_state.z_active, state_est_state->kf_state.z);
+
+    /* compute the mean raw altitude from all barometer measurements */
+    int num_alt_meas_active = 0;
+    float alt_mean = 0;
+    for (int i = 0; i < NUMBER_MEASUREMENTS; i++){
+        if (state_est_state->kf_state.z_active[i]){
+            num_alt_meas_active += 1;
+            alt_mean += state_est_state->kf_state.z[i];
+        }
+    }
+    if (num_alt_meas_active > 0) {
+        alt_mean /= num_alt_meas_active;
+        state_est_state->state_est_data.altitude_raw = (int32_t)(alt_mean * 1000);
+    } 
 
     /* we take the old acceleration from the previous timestep, if no acceleration measurements are active */
     if (num_acc_x_meas_active > 0){
         u /= num_acc_x_meas_active;
         /* gravity compensation for accelerometer */
-        kf_state->u[0] = u - GRAVITATION;
+        state_est_state->kf_state.u[0] = u - GRAVITATION;
     }
     
     if (num_temp_meas_active > 0){
         temp_meas_mean /= num_temp_meas_active;
-        update_env(env, temp_meas_mean);
+        update_env(&state_est_state->env, temp_meas_mean);
     }
 } 
 

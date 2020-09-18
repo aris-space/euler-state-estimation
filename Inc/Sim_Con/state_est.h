@@ -35,8 +35,7 @@ void state_est_step(timestamp_t t, state_est_state_t *state_est_state, bool bool
 
 void update_state_est_data(state_est_data_t *state_est_data, kf_state_t *kf_state, env_t *env);
 
-void process_measurements(timestamp_t t, kf_state_t *kf_state, state_est_meas_t *state_est_meas, state_est_meas_t *state_est_meas_prior,
-                        env_t *env, extrapolation_rolling_memory_t *extrapolation_rolling_memory);
+void process_measurements(timestamp_t t, state_est_state_t *state_est_state);
 
 void select_noise_models(kf_state_t *kf_state, flight_phase_detection_t *flight_phase_detection, env_t *env,
 						extrapolation_rolling_memory_t *extrapolation_rolling_memory);

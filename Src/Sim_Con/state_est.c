@@ -165,7 +165,7 @@ void select_noise_models(kf_state_t *kf_state, flight_phase_detection_t *flight_
     // TODO @maxi: add different noise models for each mach regime
     switch (flight_phase_detection->flight_phase) {
         case AIRBRAKE_TEST:
-        case RECOVERY:
+        case TOUCHDOWN:
         case IDLE:
             accelerometer_x_stdev = 0.0185409;
             barometer_stdev = 1.869;
@@ -178,7 +178,8 @@ void select_noise_models(kf_state_t *kf_state, flight_phase_detection_t *flight_
             accelerometer_x_stdev = 0.61803;
             barometer_stdev = 7.380;
         break;
-        case DESCENT:
+        case DROGUE_DESCENT:
+        case MAIN_DESCENT:
             accelerometer_x_stdev = 1.955133;
             barometer_stdev = 3.896;
         break;

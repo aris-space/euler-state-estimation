@@ -37,14 +37,14 @@ void detect_flight_phase(flight_phase_detection_t *flight_phase_detection, state
             if (((float)(state_est_data->velocity_world[2])) / 1000 < 0) {
                 flight_phase_detection->num_samples_positive += 1;
                 if (flight_phase_detection->num_samples_positive >= 4) {
-                    flight_phase_detection->flight_phase = DESCENT;
+                    flight_phase_detection->flight_phase = DROGUE_DESCENT;
                     flight_phase_detection->num_samples_positive = 0;
                 }
             }
         break;
 
-        case DESCENT:
-            /* we assume a ballistic descent when the absolute velocity of the rocket in vertical direction is larger than 40 m/s */
+        case DROGUE_DESCENT:
+            /* we assume a ballistic descent when the absolute velocity of the rocket in vertical direction is larger than 60 m/s */
             if (fabs(((float)(state_est_data->velocity_world[2])) / 1000) > 60) {
                 flight_phase_detection->num_samples_positive += 1;
                 if (flight_phase_detection->num_samples_positive >= 4) {
@@ -57,7 +57,7 @@ void detect_flight_phase(flight_phase_detection_t *flight_phase_detection, state
             else if (fabs(((float)(state_est_data->velocity_rocket[0])) / 1000) < 2 && fabs(((float)(state_est_data->position_world[2])) / 1000) < 500) {
                 flight_phase_detection->num_samples_positive += 1;
                 if (flight_phase_detection->num_samples_positive >= 4) {
-                    flight_phase_detection->flight_phase = RECOVERY;
+                    flight_phase_detection->flight_phase = TOUCHDOWN;
                     flight_phase_detection->num_samples_positive = 0;
                 }
             }
@@ -69,7 +69,7 @@ void detect_flight_phase(flight_phase_detection_t *flight_phase_detection, state
             if (fabs(((float)(state_est_data->velocity_rocket[0])) / 1000) < 2 && fabs(((float)(state_est_data->position_world[2])) / 1000) < 500) {
                 flight_phase_detection->num_samples_positive += 1;
                 if (flight_phase_detection->num_samples_positive >= 4) {
-                    flight_phase_detection->flight_phase = RECOVERY;
+                    flight_phase_detection->flight_phase = TOUCHDOWN;
                     flight_phase_detection->num_samples_positive = 0;
                 }
             }
@@ -77,7 +77,7 @@ void detect_flight_phase(flight_phase_detection_t *flight_phase_detection, state
             else if (fabs(((float)(state_est_data->velocity_world[2])) / 1000) < 40) {
                 flight_phase_detection->num_samples_positive += 1;
                 if (flight_phase_detection->num_samples_positive >= 4) {
-                    flight_phase_detection->flight_phase = DESCENT;
+                    flight_phase_detection->flight_phase = DROGUE_DESCENT;
                     flight_phase_detection->num_samples_positive = 0;
                 }
             }

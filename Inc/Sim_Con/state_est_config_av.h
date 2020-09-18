@@ -1,3 +1,8 @@
+#ifndef STATE_EST_CONFIG_H_
+#define STATE_EST_CONFIG_H_
+
+#define EULER_AV 1
+
 #define STATE_ESTIMATION_FREQUENCY 100
 #define NUM_SENSORBOARDS 3
 #define MAX_NUM_SENSORS 3 // max between NUM_IMU and NUM_BAROMETER
@@ -7,3 +12,5 @@
 #define MAX_LENGTH_ROLLING_MEMORY 18
 #define USE_SENSOR_ELIMINATION_BY_EXTRAPOLATION 0 // set to 1 to activate sensor elimination by extrapolation for barometer and temperature
 #define EXTRAPOLATION_POLYFIT_DEGREE 2
+
+#endif

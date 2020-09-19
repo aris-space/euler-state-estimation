@@ -45,7 +45,7 @@ void detect_flight_phase(flight_phase_detection_t *flight_phase_detection, state
 
         case DROGUE_DESCENT:
             /* we assume a ballistic descent when the absolute velocity of the rocket in vertical direction is larger than 60 m/s */
-            if (fabs(((float)(state_est_data->velocity_world[2])) / 1000) > 60) {
+            if (fabs(((float)(state_est_data->velocity_world[2])) / 1000) > 75) {
                 flight_phase_detection->num_samples_positive += 1;
                 if (flight_phase_detection->num_samples_positive >= 4) {
                     flight_phase_detection->flight_phase = BALLISTIC_DESCENT;
@@ -71,7 +71,7 @@ void detect_flight_phase(flight_phase_detection_t *flight_phase_detection, state
                     flight_phase_detection->num_samples_positive = 0;
                 }
             } /* we assume a ballistic descent when the absolute velocity of the rocket in vertical direction is larger than 60 m/s */
-            else if (fabs(((float)(state_est_data->velocity_world[2])) / 1000) > 60) {
+            else if (fabs(((float)(state_est_data->velocity_world[2])) / 1000) > 75) {
                 flight_phase_detection->num_samples_positive += 1;
                 if (flight_phase_detection->num_samples_positive >= 4) {
                     flight_phase_detection->flight_phase = BALLISTIC_DESCENT;
@@ -91,7 +91,7 @@ void detect_flight_phase(flight_phase_detection_t *flight_phase_detection, state
                 }
             }
             /* we assume a normal descent with parachute when the absolute velocity of the rocket in vertical direction is smaller than 40 m/s */
-            else if (fabs(((float)(state_est_data->velocity_world[2])) / 1000) < 40) {
+            else if (fabs(((float)(state_est_data->velocity_world[2])) / 1000) < 60) {
                 flight_phase_detection->num_samples_positive += 1;
                 if (flight_phase_detection->num_samples_positive >= 4) {
                     flight_phase_detection->flight_phase = DROGUE_DESCENT;

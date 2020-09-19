@@ -7,14 +7,14 @@ void detect_flight_phase(flight_phase_detection_t *flight_phase_detection, state
     /* determine state transition events */
     switch (flight_phase_detection->flight_phase) {
         case IDLE:
-            if (((float)(state_est_data->acceleration_rocket[0])) / 1000 > 20) {
+            if (((float)(state_est_data->acceleration_rocket[0])) / 1000 > FPD_LIFTOFF_ACC_THRESH) {
                 flight_phase_detection->num_samples_positive += 1;
                 if (flight_phase_detection->num_samples_positive >= 4) {
                     flight_phase_detection->flight_phase = THRUSTING;
                     flight_phase_detection->num_samples_positive = 0;
                 }
             }
-            if (((float)(state_est_data->position_world[2])) / 1000 > 80) {
+            else if (((float)(state_est_data->position_world[2])) / 1000 > FPD_LIFTOFF_ALT_THRESH) {
                 flight_phase_detection->num_samples_positive += 1;
                 if (flight_phase_detection->num_samples_positive >= 4) {
                     flight_phase_detection->flight_phase = THRUSTING;
@@ -44,7 +44,7 @@ void detect_flight_phase(flight_phase_detection_t *flight_phase_detection, state
         break;
 
         case DROGUE_DESCENT:
-            if (((float)(state_est_data->altitude_raw) / 1000) < 200 && state_est_data->altitude_raw_active == true) {
+            if (((float)(state_est_data->altitude_raw) / 1000) < FPD_MAIN_DESCENT_ALT_THRESH && state_est_data->altitude_raw_active == true) {
                 flight_phase_detection->num_samples_positive += 1;
                 if (flight_phase_detection->num_samples_positive >= 4) {
                     flight_phase_detection->flight_phase = MAIN_DESCENT;
@@ -52,7 +52,7 @@ void detect_flight_phase(flight_phase_detection_t *flight_phase_detection, state
                 }
             }
             /* we assume a ballistic descent when the absolute velocity of the rocket in vertical direction is larger than 75 m/s */
-            else if (fabs(((float)(state_est_data->velocity_world[2])) / 1000) > 75) {
+            else if (fabs(((float)(state_est_data->velocity_world[2])) / 1000) > FPD_BALLISTIC_VEL_THRESH_HIGH) {
                 flight_phase_detection->num_samples_positive += 1;
                 if (flight_phase_detection->num_samples_positive >= 4) {
                     flight_phase_detection->flight_phase = BALLISTIC_DESCENT;
@@ -64,14 +64,15 @@ void detect_flight_phase(flight_phase_detection_t *flight_phase_detection, state
         case MAIN_DESCENT:
             /* we assume a touchdown event when the absolute value of the altitude is smaller than 400m 
                and the absolute velocity of the rocket is smaller than 2 m/s */
-            if (fabs(((float)(state_est_data->velocity_rocket[0])) / 1000) < 2 && fabs(((float)(state_est_data->position_world[2])) / 1000) < 400) {
+            if (fabs(((float)(state_est_data->velocity_rocket[0])) / 1000) < FPD_TOUCHDOWN_VEL_THRESH 
+                && fabs(((float)(state_est_data->position_world[2])) / 1000) < FPD_TOUCHDOWN_ALT_THRESH) {
                 flight_phase_detection->num_samples_positive += 1;
                 if (flight_phase_detection->num_samples_positive >= 4) {
                     flight_phase_detection->flight_phase = TOUCHDOWN;
                     flight_phase_detection->num_samples_positive = 0;
                 }
             } /* we assume a ballistic descent when the absolute velocity of the rocket in vertical direction is larger than 75 m/s */
-            else if (fabs(((float)(state_est_data->velocity_world[2])) / 1000) > 75) {
+            else if (fabs(((float)(state_est_data->velocity_world[2])) / 1000) > FPD_BALLISTIC_VEL_THRESH_HIGH) {
                 flight_phase_detection->num_samples_positive += 1;
                 if (flight_phase_detection->num_samples_positive >= 4) {
                     flight_phase_detection->flight_phase = BALLISTIC_DESCENT;
@@ -83,7 +84,8 @@ void detect_flight_phase(flight_phase_detection_t *flight_phase_detection, state
         case BALLISTIC_DESCENT:
             /* we assume a touchdown event when the absolute value of the altitude is smaller than 400m 
                and the absolute velocity of the rocket is smaller than 2 m/s */
-            if (fabs(((float)(state_est_data->velocity_rocket[0])) / 1000) < 2 && fabs(((float)(state_est_data->position_world[2])) / 1000) < 400) {
+            if (fabs(((float)(state_est_data->velocity_rocket[0])) / 1000) < FPD_TOUCHDOWN_VEL_THRESH 
+                && fabs(((float)(state_est_data->position_world[2])) / 1000) < FPD_TOUCHDOWN_ALT_THRESH) {
                 flight_phase_detection->num_samples_positive += 1;
                 if (flight_phase_detection->num_samples_positive >= 4) {
                     flight_phase_detection->flight_phase = TOUCHDOWN;
@@ -91,7 +93,7 @@ void detect_flight_phase(flight_phase_detection_t *flight_phase_detection, state
                 }
             }
             /* we assume a normal descent with parachute when the absolute velocity of the rocket in vertical direction is smaller than 40 m/s */
-            else if (fabs(((float)(state_est_data->velocity_world[2])) / 1000) < 60) {
+            else if (fabs(((float)(state_est_data->velocity_world[2])) / 1000) < FPD_BALLISTIC_VEL_THRESH_LOW) {
                 flight_phase_detection->num_samples_positive += 1;
                 if (flight_phase_detection->num_samples_positive >= 4) {
                     flight_phase_detection->flight_phase = DROGUE_DESCENT;

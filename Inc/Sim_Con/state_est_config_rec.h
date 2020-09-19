@@ -9,6 +9,15 @@
 #define NUM_IMU 2
 #define NUM_BARO 2
 
+/* flight phase detection config */
+#define FPD_LIFTOFF_ACC_THRESH 20 // acceleration threshold to detect lift-off and enter thrusting flight phase [m/s^2]
+#define FPD_LIFTOFF_ALT_THRESH 80 // altitude above ground level to detect lift-off and enter thrusting flight phase [m]
+#define FPD_MAIN_DESCENT_ALT_THRESH 400 // altitude above ground level to enter main descent and activate the main parachute in [m]
+#define FPD_BALLISTIC_VEL_THRESH_HIGH 75 // upper velocity threshold to enter ballistic flight phase in [m/s]
+#define FPD_BALLISTIC_VEL_THRESH_LOW 60 // lower velocity threshold to leave ballistic flight phase in [m/s]
+#define FPD_TOUCHDOWN_ALT_THRESH 400 // altitude above ground level to assume touchdown (together with velocity threshold) in [m]
+#define FPD_TOUCHDOWN_VEL_THRESH 2 // velocity threshold to assume touchdown (together with altitude threshold) in [m/s]
+
 #define MAX_LENGTH_ROLLING_MEMORY 18
 #define USE_SENSOR_ELIMINATION_BY_EXTRAPOLATION 0 // set to 1 to activate sensor elimination by extrapolation for barometer and temperature
 #define EXTRAPOLATION_POLYFIT_DEGREE 2

@@ -70,6 +70,11 @@ void process_measurements(timestamp_t t, state_est_state_t *state_est_state) {
 
             temp_meas[i] = state_est_state->state_est_meas.baro_data[i].temperature;
             temp_meas_active[i] = true;
+
+            /* deactivate all barometer measurements if we are transsonic or supersonic */
+            if (state_est_state->flight_phase_detection.mach_regime != SUBSONIC) {
+                state_est_state->kf_state.z_active[i] = false;
+            }
         } else {
             state_est_state->kf_state.z[i] = 0;
             state_est_state->kf_state.z_active[i] = false;

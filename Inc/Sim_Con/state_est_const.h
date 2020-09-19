@@ -1,15 +1,7 @@
+#include "state_est_config.h"
+
 #ifndef STATE_EST_CONST_H
 #define STATE_EST_CONST_H
-
-#define STATE_ESTIMATION_FREQUENCY 100
-#define NUM_SENSORBOARDS 3
-#define MAX_NUM_SENSORS 3 // max between NUM_IMU and NUM_BAROMETER
-#define NUM_IMU 3
-#define NUM_BARO 3
-#define MAX_LENGTH_ROLLING_MEMORY 18
-
-#define USE_SENSOR_ELIMINATION_BY_EXTRAPOLATION 0 // set to 1 to activate sensor elimination by extrapolation for barometer and temperature
-#define EXTRAPOLATION_POLYFIT_DEGREE 2
 
 /** BASIC TYPES **/
 #ifdef EULER_REC
@@ -31,7 +23,7 @@ typedef uint32_t timestamp_t;
 #endif
 
 typedef enum {
-	IDLE = 1, AIRBRAKE_TEST, THRUSTING, COASTING, DESCENT, BALLISTIC_DESCENT, RECOVERY
+	IDLE = 1, AIRBRAKE_TEST, THRUSTING, COASTING, DROGUE_DESCENT, BALLISTIC_DESCENT, MAIN_DESCENT, TOUCHDOWN
 } flight_phase_e;
 
 /* Mach Regime */
@@ -67,6 +59,8 @@ typedef struct {
 	int32_t acceleration_rocket[3];
 	int32_t velocity_world[3];
 	int32_t acceleration_world[3];
+	int32_t mach_number;
+	int32_t altitude_raw;
 } state_est_data_t;
 
 /* FSM States */

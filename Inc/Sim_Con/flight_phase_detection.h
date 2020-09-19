@@ -1,5 +1,6 @@
 #include "state_est_const.h"
 #include "env.h"
+#include <stdbool.h>
 
 #ifndef FLIGHT_PHASE_DETECTION_H_
 #define FLIGHT_PHASE_DETECTION_H_

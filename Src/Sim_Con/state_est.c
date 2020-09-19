@@ -147,9 +147,9 @@ void process_measurements(timestamp_t t, state_est_state_t *state_est_state) {
     if (num_alt_meas_active > 0) {
         alt_mean /= num_alt_meas_active;
         state_est_state->state_est_data.altitude_raw = (int32_t)(alt_mean * 1000);
-        state_est_state->state_est_data.altitude_raw_active = 1;
-    } else {
-        state_est_state->state_est_data.altitude_raw_active = 0;
+        state_est_state->state_est_data.altitude_raw_active = true;
+    } else {  
+        state_est_state->state_est_data.altitude_raw_active = false;
     }
 
     /* we take the old acceleration from the previous timestep, if no acceleration measurements are active */

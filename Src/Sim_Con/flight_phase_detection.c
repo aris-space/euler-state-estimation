@@ -52,7 +52,7 @@ void detect_flight_phase(flight_phase_detection_t *flight_phase_detection, state
                     flight_phase_detection->num_samples_positive = 0;
                 }
             } else if (((float)(state_est_data->position_world[2]) / 1000) < 400 || 
-                      (((float)(state_est_data->altitude_raw) / 1000) < 200 && state_est_data->altitude_raw_active == 1)) {
+                      (((float)(state_est_data->altitude_raw) / 1000) < 200 && state_est_data->altitude_raw_active == true)) {
                 flight_phase_detection->num_samples_positive += 1;
                 if (flight_phase_detection->num_samples_positive >= 4) {
                     flight_phase_detection->flight_phase = MAIN_DESCENT;

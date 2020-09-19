@@ -1,4 +1,5 @@
 #include "state_est_config.h"
+#include <stdbool.h>
 
 #ifndef STATE_EST_CONST_H
 #define STATE_EST_CONST_H
@@ -61,7 +62,7 @@ typedef struct {
 	int32_t acceleration_world[3];
 	int32_t mach_number;
 	int32_t altitude_raw;
-	int32_t altitude_raw_active;
+	bool altitude_raw_active;
 } state_est_data_t;
 
 /* FSM States */

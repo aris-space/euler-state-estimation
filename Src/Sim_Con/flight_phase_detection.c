@@ -44,18 +44,18 @@ void detect_flight_phase(flight_phase_detection_t *flight_phase_detection, state
         break;
 
         case DROGUE_DESCENT:
-            /* we assume a ballistic descent when the absolute velocity of the rocket in vertical direction is larger than 75 m/s */
-            if (fabs(((float)(state_est_data->velocity_world[2])) / 1000) > 75) {
-                flight_phase_detection->num_samples_positive += 1;
-                if (flight_phase_detection->num_samples_positive >= 4) {
-                    flight_phase_detection->flight_phase = BALLISTIC_DESCENT;
-                    flight_phase_detection->num_samples_positive = 0;
-                }
-            } else if (((float)(state_est_data->position_world[2]) / 1000) < 400 || 
-                      (((float)(state_est_data->altitude_raw) / 1000) < 200 && state_est_data->altitude_raw_active == true)) {
+            if (((float)(state_est_data->altitude_raw) / 1000) < 200 && state_est_data->altitude_raw_active == true) {
                 flight_phase_detection->num_samples_positive += 1;
                 if (flight_phase_detection->num_samples_positive >= 4) {
                     flight_phase_detection->flight_phase = MAIN_DESCENT;
+                    flight_phase_detection->num_samples_positive = 0;
+                }
+            }
+            /* we assume a ballistic descent when the absolute velocity of the rocket in vertical direction is larger than 75 m/s */
+            else if (fabs(((float)(state_est_data->velocity_world[2])) / 1000) > 75) {
+                flight_phase_detection->num_samples_positive += 1;
+                if (flight_phase_detection->num_samples_positive >= 4) {
+                    flight_phase_detection->flight_phase = BALLISTIC_DESCENT;
                     flight_phase_detection->num_samples_positive = 0;
                 }
             }

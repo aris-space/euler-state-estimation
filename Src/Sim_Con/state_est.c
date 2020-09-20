@@ -40,7 +40,7 @@ void state_est_step(timestamp_t t, state_est_state_t *state_est_state, bool bool
 	update_state_est_data(&state_est_state->state_est_data, &state_est_state->kf_state, &state_est_state->env);
 
     if (bool_detect_flight_phase){
-        detect_flight_phase(&state_est_state->flight_phase_detection, &state_est_state->state_est_data);
+        detect_flight_phase(t, &state_est_state->flight_phase_detection, &state_est_state->state_est_data);
     }
 
 	/* set measurement prior to measurements from completed state estimation step */
@@ -79,6 +79,7 @@ void process_measurements(timestamp_t t, state_est_state_t *state_est_state) {
             /* deactivate all barometer measurements during control phase if required because of dynamic pressure */
             #ifdef USE_BARO_IN_CONTROL_PHASE
                 if (USE_BARO_IN_CONTROL_PHASE == false) {
+                    // TODO: check airbrake feedback, if we can activate baro during bias reset flight phase
                     if (state_est_state->flight_phase_detection.flight_phase == CONTROL) {
                         state_est_state->kf_state.z_active[i] = false;
                     }

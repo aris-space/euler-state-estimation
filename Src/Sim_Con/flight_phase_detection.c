@@ -1,8 +1,8 @@
 #include "../../Inc/Sim_Con/flight_phase_detection.h"
 
-void detect_flight_phase(flight_phase_detection_t *flight_phase_detection, state_est_data_t *state_est_data)
+void detect_flight_phase(timestamp_t t, flight_phase_detection_t *flight_phase_detection, state_est_data_t *state_est_data)
 {   
-
+    /* timestamp_t t needs to be the tick time in [ms] */
 
     /* determine state transition events */
     switch (flight_phase_detection->flight_phase) {
@@ -33,7 +33,6 @@ void detect_flight_phase(flight_phase_detection_t *flight_phase_detection, state
             }
         break;
         
-        case BIAS_RESET:
         case COASTING:
             #ifdef FPD_CONTROL_ACTIVE
                 if (flight_phase_detection->mach_number < FPD_CONTROL_ACTIVATION_MACH_NUMBER) {
@@ -55,11 +54,52 @@ void detect_flight_phase(flight_phase_detection_t *flight_phase_detection, state
         break;
 
         case CONTROL:
-            #ifdef FPD_CONTROL_ACTIVE
-                if (flight_phase_detection->mach_number < FPD_CONTROL_DEACTIVATION_MACH_NUMBER) {
+            #if defined(FPD_CONTROL_ACTIVE) && defined(FPD_BIAS_RESET_ACTIVATION_MACH_NUMBER)
+                #if defined(FPD_BIAS_RESET_TIME)
+                    if (FPD_BIAS_RESET_TIME > 0) {
+                         if (flight_phase_detection->mach_number < FPD_CONTROL_DEACTIVATION_MACH_NUMBER) {
+                            flight_phase_detection->num_samples_positive += 1;
+                            if (flight_phase_detection->num_samples_positive >= 4) {
+                                flight_phase_detection->flight_phase = APOGEE_APPROACH;
+                                flight_phase_detection->num_samples_positive = 0;
+                            }
+                        }
+                        else if (flight_phase_detection->mach_number < FPD_BIAS_RESET_ACTIVATION_MACH_NUMBER && 
+                            flight_phase_detection->t_bias_reset_start == -1) {
+                            flight_phase_detection->num_samples_positive += 1;
+                            if (flight_phase_detection->num_samples_positive >= 4) {
+                                flight_phase_detection->flight_phase = BIAS_RESET;
+                                flight_phase_detection->num_samples_positive = 0;
+                                flight_phase_detection->t_bias_reset_start = t;
+                            }
+                        }
+                    } else {
+                        if (flight_phase_detection->mach_number < FPD_CONTROL_DEACTIVATION_MACH_NUMBER) {
+                            flight_phase_detection->num_samples_positive += 1;
+                            if (flight_phase_detection->num_samples_positive >= 4) {
+                                flight_phase_detection->flight_phase = APOGEE_APPROACH;
+                                flight_phase_detection->num_samples_positive = 0;
+                            }
+                        }
+                    }
+                #else
+                    if (flight_phase_detection->mach_number < FPD_CONTROL_DEACTIVATION_MACH_NUMBER) {
+                        flight_phase_detection->num_samples_positive += 1;
+                        if (flight_phase_detection->num_samples_positive >= 4) {
+                            flight_phase_detection->flight_phase = APOGEE_APPROACH;
+                            flight_phase_detection->num_samples_positive = 0;
+                        }
+                    }
+                #endif
+            #endif
+        break;
+
+        case BIAS_RESET:
+            #ifdef FPD_BIAS_RESET_TIME
+                if (t > (flight_phase_detection->t_bias_reset_start + FPD_BIAS_RESET_TIME * 1000)) {
                     flight_phase_detection->num_samples_positive += 1;
                     if (flight_phase_detection->num_samples_positive >= 4) {
-                        flight_phase_detection->flight_phase = APOGEE_APPROACH;
+                        flight_phase_detection->flight_phase = CONTROL;                        
                         flight_phase_detection->num_samples_positive = 0;
                     }
                 }
@@ -160,4 +200,5 @@ void reset_flight_phase_detection(flight_phase_detection_t *flight_phase_detecti
     flight_phase_detection->mach_regime = SUBSONIC;
     flight_phase_detection->mach_number = 0.0;
     flight_phase_detection->num_samples_positive = 0;
+    flight_phase_detection->t_bias_reset_start = -1;
 }

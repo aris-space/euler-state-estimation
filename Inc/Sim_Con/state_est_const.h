@@ -24,7 +24,7 @@ typedef uint32_t timestamp_t;
 #endif
 
 typedef enum {
-	IDLE = 1, AIRBRAKE_TEST, THRUSTING, COASTING, DROGUE_DESCENT, BALLISTIC_DESCENT, MAIN_DESCENT, TOUCHDOWN
+	IDLE = 1, AIRBRAKE_TEST, THRUSTING, COASTING, CONTROL, BIAS_RESET, APOGEE_APPROACH, DROGUE_DESCENT, BALLISTIC_DESCENT, MAIN_DESCENT, TOUCHDOWN
 } flight_phase_e;
 
 /* Mach Regime */
@@ -71,6 +71,7 @@ typedef struct {
 	mach_regime_e mach_regime;
 	float mach_number;
 	int8_t num_samples_positive;
+	int8_t t_bias_reset_start;
 } flight_phase_detection_t;
 
 #endif

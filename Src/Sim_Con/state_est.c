@@ -40,7 +40,7 @@ void state_est_step(timestamp_t t, state_est_state_t *state_est_state, bool bool
 	update_state_est_data(&state_est_state->state_est_data, &state_est_state->kf_state, &state_est_state->env);
 
     if (bool_detect_flight_phase){
-        detect_flight_phase(&state_est_state->flight_phase_detection, &state_est_state->state_est_data);
+        detect_flight_phase(t, &state_est_state->flight_phase_detection, &state_est_state->state_est_data);
     }
 
 	/* set measurement prior to measurements from completed state estimation step */
@@ -75,6 +75,16 @@ void process_measurements(timestamp_t t, state_est_state_t *state_est_state) {
             if (state_est_state->flight_phase_detection.mach_regime != SUBSONIC) {
                 state_est_state->kf_state.z_active[i] = false;
             }
+
+            /* deactivate all barometer measurements during control phase if required because of dynamic pressure */
+            #ifdef USE_BARO_IN_CONTROL_PHASE
+                if (USE_BARO_IN_CONTROL_PHASE == false) {
+                    // TODO: check airbrake feedback, if we can activate baro during bias reset flight phase
+                    if (state_est_state->flight_phase_detection.flight_phase == CONTROL) {
+                        state_est_state->kf_state.z_active[i] = false;
+                    }
+                }
+            #endif
         } else {
             state_est_state->kf_state.z[i] = 0;
             state_est_state->kf_state.z_active[i] = false;
@@ -182,6 +192,9 @@ void select_noise_models(kf_state_t *kf_state, flight_phase_detection_t *flight_
             accelerometer_x_stdev = 1.250775;
             barometer_stdev = 13.000;
         break;
+        case BIAS_RESET:
+        case APOGEE_APPROACH:
+        case CONTROL:
         case COASTING:
             accelerometer_x_stdev = 0.61803;
             barometer_stdev = 7.380;

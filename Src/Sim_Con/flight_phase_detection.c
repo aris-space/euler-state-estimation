@@ -33,7 +33,38 @@ void detect_flight_phase(flight_phase_detection_t *flight_phase_detection, state
             }
         break;
         
+        case BIAS_RESET:
         case COASTING:
+            #ifdef FPD_CONTROL_ACTIVE
+                if (flight_phase_detection->mach_number < FPD_CONTROL_ACTIVATION_MACH_NUMBER) {
+                    flight_phase_detection->num_samples_positive += 1;
+                    if (flight_phase_detection->num_samples_positive >= 4) {
+                        flight_phase_detection->flight_phase = CONTROL;
+                        flight_phase_detection->num_samples_positive = 0;
+                    }
+                }
+            #else
+                if (((float)(state_est_data->velocity_world[2])) / 1000 < 0) {
+                    flight_phase_detection->num_samples_positive += 1;
+                    if (flight_phase_detection->num_samples_positive >= 4) {
+                        flight_phase_detection->flight_phase = DROGUE_DESCENT;
+                        flight_phase_detection->num_samples_positive = 0;
+                    }
+                }
+            #endif
+        break;
+
+        case CONTROL:
+            if (flight_phase_detection->mach_number < FPD_CONTROL_DEACTIVATION_MACH_NUMBER) {
+                flight_phase_detection->num_samples_positive += 1;
+                if (flight_phase_detection->num_samples_positive >= 4) {
+                    flight_phase_detection->flight_phase = APOGEE_APPROACH;
+                    flight_phase_detection->num_samples_positive = 0;
+                }
+            }
+        break;
+
+        case APOGEE_APPROACH:
             if (((float)(state_est_data->velocity_world[2])) / 1000 < 0) {
                 flight_phase_detection->num_samples_positive += 1;
                 if (flight_phase_detection->num_samples_positive >= 4) {

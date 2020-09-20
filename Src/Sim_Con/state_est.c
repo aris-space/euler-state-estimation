@@ -182,6 +182,9 @@ void select_noise_models(kf_state_t *kf_state, flight_phase_detection_t *flight_
             accelerometer_x_stdev = 1.250775;
             barometer_stdev = 13.000;
         break;
+        case BIAS_RESET:
+        case APOGEE_APPROACH:
+        case CONTROL:
         case COASTING:
             accelerometer_x_stdev = 0.61803;
             barometer_stdev = 7.380;

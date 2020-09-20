@@ -75,6 +75,15 @@ void process_measurements(timestamp_t t, state_est_state_t *state_est_state) {
             if (state_est_state->flight_phase_detection.mach_regime != SUBSONIC) {
                 state_est_state->kf_state.z_active[i] = false;
             }
+
+            /* deactivate all barometer measurements during control phase if required because of dynamic pressure */
+            #ifdef USE_BARO_IN_CONTROL_PHASE
+                if (USE_BARO_IN_CONTROL_PHASE == false) {
+                    if (state_est_state->flight_phase_detection.flight_phase == CONTROL) {
+                        state_est_state->kf_state.z_active[i] = false;
+                    }
+                }
+            #endif
         } else {
             state_est_state->kf_state.z[i] = 0;
             state_est_state->kf_state.z_active[i] = false;

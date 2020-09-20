@@ -55,13 +55,15 @@ void detect_flight_phase(flight_phase_detection_t *flight_phase_detection, state
         break;
 
         case CONTROL:
-            if (flight_phase_detection->mach_number < FPD_CONTROL_DEACTIVATION_MACH_NUMBER) {
-                flight_phase_detection->num_samples_positive += 1;
-                if (flight_phase_detection->num_samples_positive >= 4) {
-                    flight_phase_detection->flight_phase = APOGEE_APPROACH;
-                    flight_phase_detection->num_samples_positive = 0;
+            #ifdef FPD_CONTROL_ACTIVE
+                if (flight_phase_detection->mach_number < FPD_CONTROL_DEACTIVATION_MACH_NUMBER) {
+                    flight_phase_detection->num_samples_positive += 1;
+                    if (flight_phase_detection->num_samples_positive >= 4) {
+                        flight_phase_detection->flight_phase = APOGEE_APPROACH;
+                        flight_phase_detection->num_samples_positive = 0;
+                    }
                 }
-            }
+            #endif
         break;
 
         case APOGEE_APPROACH:

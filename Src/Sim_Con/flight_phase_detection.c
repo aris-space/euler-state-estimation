@@ -153,7 +153,7 @@ void detect_flight_phase(timestamp_t t, flight_phase_detection_t *flight_phase_d
             if (fabs(((float)(state_est_data->velocity_rocket[0])) / 1000) < FPD_TOUCHDOWN_VEL_THRESH 
                 && fabs(((float)(state_est_data->position_world[2])) / 1000) < FPD_TOUCHDOWN_ALT_THRESH) {
                 flight_phase_detection->safety_counter[0] += 1;
-                if (flight_phase_detection->safety_counter[0] >= 4) {
+                if (flight_phase_detection->safety_counter[0] >= 20) {
                     flight_phase_detection->flight_phase = TOUCHDOWN;
                     flight_phase_detection->safety_counter[0] = 0;
                     flight_phase_detection->safety_counter[1] = 0;
@@ -175,7 +175,7 @@ void detect_flight_phase(timestamp_t t, flight_phase_detection_t *flight_phase_d
             if (fabs(((float)(state_est_data->velocity_rocket[0])) / 1000) < FPD_TOUCHDOWN_VEL_THRESH 
                 && fabs(((float)(state_est_data->position_world[2])) / 1000) < FPD_TOUCHDOWN_ALT_THRESH) {
                 flight_phase_detection->safety_counter[0] += 1;
-                if (flight_phase_detection->safety_counter[0] >= 4) {
+                if (flight_phase_detection->safety_counter[0] >= 20) {
                     flight_phase_detection->flight_phase = TOUCHDOWN;
                     flight_phase_detection->safety_counter[0] = 0;
                     flight_phase_detection->safety_counter[1] = 0;

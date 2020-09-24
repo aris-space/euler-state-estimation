@@ -13,7 +13,7 @@
 
 /* flight phase detection config */
 #define FPD_LIFTOFF_ACC_THRESH 20 // acceleration threshold to detect lift-off and enter thrusting flight phase [m/s^2]
-#define FPD_LIFTOFF_ALT_THRESH 80 // altitude above ground level to detect lift-off and enter thrusting flight phase [m]
+#define FPD_LIFTOFF_ALT_THRESH 150 // altitude above ground level to detect lift-off and enter thrusting flight phase [m]
 #define FPD_CONTROL_ACTIVE true // use control flight phases such as CONTROL, BIAS_RESET or APOGEE_APPROACH
 #define FPD_CONTROL_ACTIVATION_MACH_NUMBER 0.55 // the controller is activated below this mach number [mach]
 #define FPD_CONTROL_DEACTIVATION_MACH_NUMBER 0.1 // the apogee approach phase is activated below this mach number [mach]

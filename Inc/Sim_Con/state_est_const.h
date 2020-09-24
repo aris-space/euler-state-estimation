@@ -70,7 +70,7 @@ typedef struct {
 	flight_phase_e flight_phase;
 	mach_regime_e mach_regime;
 	float mach_number;
-	int8_t num_samples_positive;
+	int8_t safety_counter[2];
 	int8_t t_bias_reset_start;
 } flight_phase_detection_t;
 

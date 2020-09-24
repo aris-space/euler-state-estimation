@@ -9,7 +9,7 @@ void detect_flight_phase(timestamp_t t, flight_phase_detection_t *flight_phase_d
         case IDLE:
             if (((float)(state_est_data->acceleration_rocket[0])) / 1000 > FPD_LIFTOFF_ACC_THRESH) {
                 flight_phase_detection->safety_counter[0] += 1;
-                if (flight_phase_detection->safety_counter[0] >= 4) {
+                if (flight_phase_detection->safety_counter[0] >= FPD_SAFETY_COUNTER_THRESH) {
                     flight_phase_detection->flight_phase = THRUSTING;
                     flight_phase_detection->safety_counter[0] = 0;
                     flight_phase_detection->safety_counter[1] = 0;
@@ -17,7 +17,7 @@ void detect_flight_phase(timestamp_t t, flight_phase_detection_t *flight_phase_d
             }
             else if (((float)(state_est_data->position_world[2])) / 1000 > FPD_LIFTOFF_ALT_THRESH) {
                 flight_phase_detection->safety_counter[1] += 1;
-                if (flight_phase_detection->safety_counter[1] >= 4) {
+                if (flight_phase_detection->safety_counter[1] >= FPD_SAFETY_COUNTER_THRESH) {
                     flight_phase_detection->flight_phase = THRUSTING;
                     flight_phase_detection->safety_counter[0] = 0;
                     flight_phase_detection->safety_counter[1] = 0;
@@ -28,7 +28,7 @@ void detect_flight_phase(timestamp_t t, flight_phase_detection_t *flight_phase_d
         case THRUSTING:
             if (((float)(state_est_data->acceleration_rocket[0])) / 1000 < 0) {
                 flight_phase_detection->safety_counter[0] += 1;
-                if (flight_phase_detection->safety_counter[0] >= 4) {
+                if (flight_phase_detection->safety_counter[0] >= FPD_SAFETY_COUNTER_THRESH) {
                     flight_phase_detection->flight_phase = COASTING;
                     flight_phase_detection->safety_counter[0] = 0;
                     flight_phase_detection->safety_counter[1] = 0;
@@ -40,7 +40,7 @@ void detect_flight_phase(timestamp_t t, flight_phase_detection_t *flight_phase_d
             #ifdef FPD_CONTROL_ACTIVE
                 if (flight_phase_detection->mach_number < FPD_CONTROL_ACTIVATION_MACH_NUMBER) {
                     flight_phase_detection->safety_counter[0] += 1;
-                    if (flight_phase_detection->safety_counter[0] >= 4) {
+                    if (flight_phase_detection->safety_counter[0] >= FPD_SAFETY_COUNTER_THRESH) {
                         flight_phase_detection->flight_phase = CONTROL;
                         flight_phase_detection->safety_counter[0] = 0;
                         flight_phase_detection->safety_counter[1] = 0;
@@ -49,7 +49,7 @@ void detect_flight_phase(timestamp_t t, flight_phase_detection_t *flight_phase_d
             #else
                 if (((float)(state_est_data->velocity_world[2])) / 1000 < 0) {
                     flight_phase_detection->safety_counter[0] += 1;
-                    if (flight_phase_detection->safety_counter[0] >= 4) {
+                    if (flight_phase_detection->safety_counter[0] >= FPD_SAFETY_COUNTER_THRESH) {
                         flight_phase_detection->flight_phase = DROGUE_DESCENT;
                         flight_phase_detection->safety_counter[0] = 0;
                         flight_phase_detection->safety_counter[1] = 0;
@@ -64,7 +64,7 @@ void detect_flight_phase(timestamp_t t, flight_phase_detection_t *flight_phase_d
                     if (FPD_BIAS_RESET_TIME > 0) {
                          if (flight_phase_detection->mach_number < FPD_CONTROL_DEACTIVATION_MACH_NUMBER) {
                             flight_phase_detection->safety_counter[0] += 1;
-                            if (flight_phase_detection->safety_counter[0] >= 4) {
+                            if (flight_phase_detection->safety_counter[0] >= FPD_SAFETY_COUNTER_THRESH) {
                                 flight_phase_detection->flight_phase = APOGEE_APPROACH;
                                 flight_phase_detection->safety_counter[0] = 0;
                                 flight_phase_detection->safety_counter[1] = 0;
@@ -73,7 +73,7 @@ void detect_flight_phase(timestamp_t t, flight_phase_detection_t *flight_phase_d
                         else if (flight_phase_detection->mach_number < FPD_BIAS_RESET_ACTIVATION_MACH_NUMBER && 
                             flight_phase_detection->t_bias_reset_start == -1) {
                             flight_phase_detection->safety_counter[1] += 1;
-                            if (flight_phase_detection->safety_counter[1] >= 4) {
+                            if (flight_phase_detection->safety_counter[1] >= FPD_SAFETY_COUNTER_THRESH) {
                                 flight_phase_detection->flight_phase = BIAS_RESET;
                                 flight_phase_detection->safety_counter[0] = 0;
                                 flight_phase_detection->safety_counter[1] = 0;
@@ -83,7 +83,7 @@ void detect_flight_phase(timestamp_t t, flight_phase_detection_t *flight_phase_d
                     } else {
                         if (flight_phase_detection->mach_number < FPD_CONTROL_DEACTIVATION_MACH_NUMBER) {
                             flight_phase_detection->safety_counter[0] += 1;
-                            if (flight_phase_detection->safety_counter[0] >= 4) {
+                            if (flight_phase_detection->safety_counter[0] >= FPD_SAFETY_COUNTER_THRESH) {
                                 flight_phase_detection->flight_phase = APOGEE_APPROACH;
                                 flight_phase_detection->safety_counter[0] = 0;
                                 flight_phase_detection->safety_counter[1] = 0;
@@ -93,7 +93,7 @@ void detect_flight_phase(timestamp_t t, flight_phase_detection_t *flight_phase_d
                 #else
                     if (flight_phase_detection->mach_number < FPD_CONTROL_DEACTIVATION_MACH_NUMBER) {
                         flight_phase_detection->safety_counter[0] += 1;
-                        if (flight_phase_detection->safety_counter[0] >= 4) {
+                        if (flight_phase_detection->safety_counter[0] >= FPD_SAFETY_COUNTER_THRESH) {
                             flight_phase_detection->flight_phase = APOGEE_APPROACH;
                             flight_phase_detection->safety_counter[0] = 0;
                             flight_phase_detection->safety_counter[1] = 0;
@@ -107,7 +107,7 @@ void detect_flight_phase(timestamp_t t, flight_phase_detection_t *flight_phase_d
             #ifdef FPD_BIAS_RESET_TIME
                 if (t > (flight_phase_detection->t_bias_reset_start + FPD_BIAS_RESET_TIME * 1000)) {
                     flight_phase_detection->safety_counter[0] += 1;
-                    if (flight_phase_detection->safety_counter[0] >= 4) {
+                    if (flight_phase_detection->safety_counter[0] >= FPD_SAFETY_COUNTER_THRESH) {
                         flight_phase_detection->flight_phase = CONTROL;                        
                         flight_phase_detection->safety_counter[0] = 0;
                         flight_phase_detection->safety_counter[1] = 0;
@@ -119,7 +119,7 @@ void detect_flight_phase(timestamp_t t, flight_phase_detection_t *flight_phase_d
         case APOGEE_APPROACH:
             if (((float)(state_est_data->velocity_world[2])) / 1000 < 0) {
                 flight_phase_detection->safety_counter[0] += 1;
-                if (flight_phase_detection->safety_counter[0] >= 4) {
+                if (flight_phase_detection->safety_counter[0] >= FPD_SAFETY_COUNTER_THRESH) {
                     flight_phase_detection->flight_phase = DROGUE_DESCENT;
                     flight_phase_detection->safety_counter[0] = 0;
                     flight_phase_detection->safety_counter[1] = 0;
@@ -130,7 +130,7 @@ void detect_flight_phase(timestamp_t t, flight_phase_detection_t *flight_phase_d
         case DROGUE_DESCENT:
             if (((float)(state_est_data->altitude_raw) / 1000) < FPD_MAIN_DESCENT_ALT_THRESH && state_est_data->altitude_raw_active == true) {
                 flight_phase_detection->safety_counter[0] += 1;
-                if (flight_phase_detection->safety_counter[0] >= 4) {
+                if (flight_phase_detection->safety_counter[0] >= FPD_SAFETY_COUNTER_THRESH) {
                     flight_phase_detection->flight_phase = MAIN_DESCENT;
                     flight_phase_detection->safety_counter[0] = 0;
                     flight_phase_detection->safety_counter[1] = 0;
@@ -139,7 +139,7 @@ void detect_flight_phase(timestamp_t t, flight_phase_detection_t *flight_phase_d
             /* we assume a ballistic descent when the absolute velocity of the rocket in vertical direction is larger than 75 m/s */
             else if (fabs(((float)(state_est_data->velocity_world[2])) / 1000) > FPD_BALLISTIC_VEL_THRESH_HIGH) {
                 flight_phase_detection->safety_counter[1] += 1;
-                if (flight_phase_detection->safety_counter[1] >= 4) {
+                if (flight_phase_detection->safety_counter[1] >= FPD_SAFETY_COUNTER_THRESH) {
                     flight_phase_detection->flight_phase = BALLISTIC_DESCENT;
                     flight_phase_detection->safety_counter[0] = 0;
                     flight_phase_detection->safety_counter[1] = 0;
@@ -153,7 +153,7 @@ void detect_flight_phase(timestamp_t t, flight_phase_detection_t *flight_phase_d
             if (fabs(((float)(state_est_data->velocity_rocket[0])) / 1000) < FPD_TOUCHDOWN_VEL_THRESH 
                 && fabs(((float)(state_est_data->position_world[2])) / 1000) < FPD_TOUCHDOWN_ALT_THRESH) {
                 flight_phase_detection->safety_counter[0] += 1;
-                if (flight_phase_detection->safety_counter[0] >= 20) {
+                if (flight_phase_detection->safety_counter[0] >= FPD_TOUCHDOWN_SAFETY_COUNTER_THRESH) {
                     flight_phase_detection->flight_phase = TOUCHDOWN;
                     flight_phase_detection->safety_counter[0] = 0;
                     flight_phase_detection->safety_counter[1] = 0;
@@ -161,7 +161,7 @@ void detect_flight_phase(timestamp_t t, flight_phase_detection_t *flight_phase_d
             } /* we assume a ballistic descent when the absolute velocity of the rocket in vertical direction is larger than 75 m/s */
             else if (fabs(((float)(state_est_data->velocity_world[2])) / 1000) > FPD_BALLISTIC_VEL_THRESH_HIGH) {
                 flight_phase_detection->safety_counter[1] += 1;
-                if (flight_phase_detection->safety_counter[1] >= 4) {
+                if (flight_phase_detection->safety_counter[1] >= FPD_SAFETY_COUNTER_THRESH) {
                     flight_phase_detection->flight_phase = BALLISTIC_DESCENT;
                     flight_phase_detection->safety_counter[0] = 0;
                     flight_phase_detection->safety_counter[1] = 0;
@@ -175,7 +175,7 @@ void detect_flight_phase(timestamp_t t, flight_phase_detection_t *flight_phase_d
             if (fabs(((float)(state_est_data->velocity_rocket[0])) / 1000) < FPD_TOUCHDOWN_VEL_THRESH 
                 && fabs(((float)(state_est_data->position_world[2])) / 1000) < FPD_TOUCHDOWN_ALT_THRESH) {
                 flight_phase_detection->safety_counter[0] += 1;
-                if (flight_phase_detection->safety_counter[0] >= 20) {
+                if (flight_phase_detection->safety_counter[0] >= FPD_TOUCHDOWN_SAFETY_COUNTER_THRESH) {
                     flight_phase_detection->flight_phase = TOUCHDOWN;
                     flight_phase_detection->safety_counter[0] = 0;
                     flight_phase_detection->safety_counter[1] = 0;
@@ -184,7 +184,7 @@ void detect_flight_phase(timestamp_t t, flight_phase_detection_t *flight_phase_d
             /* we assume a normal descent with parachute when the absolute velocity of the rocket in vertical direction is smaller than 40 m/s */
             else if (fabs(((float)(state_est_data->velocity_world[2])) / 1000) < FPD_BALLISTIC_VEL_THRESH_LOW) {
                 flight_phase_detection->safety_counter[1] += 1;
-                if (flight_phase_detection->safety_counter[1] >= 4) {
+                if (flight_phase_detection->safety_counter[1] >= FPD_SAFETY_COUNTER_THRESH) {
                     flight_phase_detection->flight_phase = DROGUE_DESCENT;
                     flight_phase_detection->safety_counter[0] = 0;
                     flight_phase_detection->safety_counter[1] = 0;

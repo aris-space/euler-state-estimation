@@ -1,4 +1,4 @@
-#include "../../Inc/Sim_Con/flight_phase_detection.h"
+#include "../Inc/flight_phase_detection.h"
 
 void detect_flight_phase(timestamp_t t, flight_phase_detection_t *flight_phase_detection, state_est_data_t *state_est_data)
 {   

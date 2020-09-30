@@ -51,6 +51,8 @@ typedef struct {
     /* acceleration in [m/s^2] and angular velocity in [rad/s] */
     /* all in rocket frame where x-dir is along length of rocket */
 	imu_state_est_t imu_data[NUM_SENSORBOARDS];
+	/* Motor Feedback in range [0-1]*/
+	float airbrake_ext_meas;
 } state_est_meas_t;
 
 /* State Estimation Output */

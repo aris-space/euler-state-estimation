@@ -11,7 +11,7 @@ typedef uint32_t timestamp_t;
 #endif
 
 #ifdef EULER_AV
-#include "../Util/util.h"
+#include "../../Inc/Util/util.h"
 #endif
 
 #ifdef EULER_SIMCON

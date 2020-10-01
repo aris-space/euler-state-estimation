@@ -79,8 +79,9 @@ void process_measurements(timestamp_t t, state_est_state_t *state_est_state) {
             /* deactivate all barometer measurements during control phase if required because of dynamic pressure */
             #ifdef USE_BARO_IN_CONTROL_PHASE
                 if (USE_BARO_IN_CONTROL_PHASE == false) {
-                    // TODO: check airbrake feedback, if we can activate baro during bias reset flight phase
-                    if (state_est_state->flight_phase_detection.flight_phase == CONTROL) {
+                    if (state_est_state->flight_phase_detection.flight_phase == CONTROL || 
+                       (state_est_state->flight_phase_detection.flight_phase == BIAS_RESET && 
+                            state_est_state->state_est_meas.airbrake_extension > BIAS_RESET_AIRBRAKE_EXTENSION_THRESH)) {
                         state_est_state->kf_state.z_active[i] = false;
                     }
                 }

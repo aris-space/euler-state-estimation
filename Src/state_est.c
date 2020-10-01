@@ -173,6 +173,9 @@ void process_measurements(timestamp_t t, state_est_state_t *state_est_state) {
         temp_meas_mean /= num_temp_meas_active;
         update_env(&state_est_state->env, temp_meas_mean);
     }
+
+    /* airbrake extension tracking feedback */
+    state_est_state->state_est_data.airbrake_extension = (int32_t)(state_est_state->state_est_meas.airbrake_extension * 1000000);
 } 
 
 void select_noise_models(kf_state_t *kf_state, flight_phase_detection_t *flight_phase_detection, env_t *env,

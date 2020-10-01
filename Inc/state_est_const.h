@@ -52,7 +52,7 @@ typedef struct {
     /* all in rocket frame where x-dir is along length of rocket */
 	imu_state_est_t imu_data[NUM_SENSORBOARDS];
 	/* Motor Feedback in range [0-1]*/
-	float airbrake_ext_meas;
+	float airbrake_extension;
 } state_est_meas_t;
 
 /* State Estimation Output */
@@ -65,6 +65,7 @@ typedef struct {
 	int32_t mach_number;
 	int32_t altitude_raw;
 	bool altitude_raw_active;
+	int32_t airbrake_extension;
 } state_est_data_t;
 
 /* FSM States */

@@ -15,10 +15,12 @@
 #define T_GRAD 0.0065
 #define TEMPERATURE_REFERENCE 15 // ISA reference temperature at sea level [K]
 #define PRESSURE_REFERENCE 101325 // ISA reference pressure at sea level [Pa]
+#define RHO_REFERENCE 1.225 // ISA reference air density at sealevel
 
 typedef struct env_t {
     float p_g; // Pressure on ground level [Pa]
     float T_g; // Temperatur on ground level [K]
+    float rho_g; // air density on ground level [kg/m^3]
 
     float T; // Temperature [K]
     float C; // speed of sound

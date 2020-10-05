@@ -9,6 +9,7 @@ void init_env(env_t *env) {
 void calibrate_env(env_t *env, float p_g, float T_g) {
 	env->T_g = T_g + T_0; // input is temperature in °C
 	env->p_g = p_g; //
+	env->rho_g = RHO_REFERENCE * ((env->p_g / PRESSURE_REFERENCE) * (TEMPERATURE_REFERENCE / env->T_g));
 }
 
 void update_env(env_t *env, float T) {

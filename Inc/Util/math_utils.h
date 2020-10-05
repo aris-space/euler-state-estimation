@@ -71,6 +71,8 @@ void cholesky(int n, float A[n][n], float L[n][n]);
 /* the inverse has a big O complexity of n^3 */
 void cholesky_inverse(int n, float A[n][n], float inverse[n][n], float lambda);
 
+void interpolate(float y[2], float x[2], float xp, float *yp);
+
 /* Polyfit https://github.com/natedomin/polyfit/blob/master/polyfit.c */
 int polyfit(const float* const dependentValues, const float* const independentValues, 
             unsigned int countOfElements, unsigned int order, double* coefficients);

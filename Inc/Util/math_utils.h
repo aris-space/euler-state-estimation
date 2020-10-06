@@ -21,6 +21,9 @@ void vecadd(int n, float a[n], float b[n], float c[n]);
 /* Calculates the substraction of two vectors */
 void vecsub(int n, float a[n], float b[n], float c[n]);
 
+/* Calculates the product of a scalar with a vector */
+void scalarvecprod(int n, float scalar, float a[n], float b[n]);
+
 /* Calculates the addition of two matrices */
 void matadd(int m, int n, float A[m][n], float B[m][n], float C[m][n]);
 

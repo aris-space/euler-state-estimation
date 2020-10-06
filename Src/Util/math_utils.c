@@ -34,6 +34,12 @@ void vecsub(int n, float a[n], float b[n], float c[n]) {
 	}
 }
 
+void scalarvecprod(int n, float scalar, float a[n], float b[n]){
+    for(int i = 0; i < n; i++){
+        b[i] = scalar * a[i];
+    }
+}
+
 void matadd(int m, int n, float A[m][n], float B[m][n], float C[m][n]) {
 	for(int i = 0; i < m; i++){
         for(int j = 0; j < n; j++){

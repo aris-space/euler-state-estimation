@@ -39,6 +39,30 @@ void state_est_step(timestamp_t t, state_est_state_t *state_est_state, bool bool
 
 	update_state_est_data(&state_est_state->state_est_data, &state_est_state->kf_state, &state_est_state->env);
 
+    if (EULER_REC == 1){
+    	float p_avg, alt, velocity;
+    	p_avg = update_mav(state_est_state->state_est_meas.baro_data[0].pressure, state_est_state->state_est_meas.baro_data[1].pressure);
+
+    	if (state_est_state->flight_phase_detection.flight_phase >= DROGUE_DESCENT ){
+			float p_a[1];
+			p_a[0] = p_avg;
+			bool p_ac[1] = {1};
+			float h[1];
+			printf("\n ------ p_a: %4.2f \n",p_a[0]);
+			pressure2altitudeAGL(&state_est_state->env, 1, p_a, p_ac, h);
+			printf("\n ------ h: %4.2f \n",h[0]);
+			velocity = get_velocity(h[0],state_est_state->state_est_meas.baro_data[0].ts);
+			alt = h[0];
+			state_est_state->state_est_data.position_world[2] = (int32_t)(alt * 1000);
+			state_est_state->state_est_data.velocity_rocket[0] = (int32_t)(velocity * 1000);
+			state_est_state->state_est_data.velocity_world[2] = (int32_t)(velocity * 1000);
+			state_est_state->state_est_data.acceleration_rocket[0] = 0;
+			state_est_state->state_est_data.acceleration_world[2] = 0;
+			state_est_state->state_est_data.mach_number = 0;
+    	}
+    }
+
+
     if (bool_detect_flight_phase){
         detect_flight_phase(t, &state_est_state->flight_phase_detection, &state_est_state->state_est_data);
     }
@@ -54,6 +78,7 @@ void update_state_est_data(state_est_data_t *state_est_data, kf_state_t *kf_stat
     state_est_data->acceleration_rocket[0] = (int32_t)(kf_state->u[0] * 1000);
     state_est_data->acceleration_world[2] = (int32_t)(kf_state->u[0] * 1000);
     state_est_data->mach_number = (int32_t)(mach_number(env, kf_state->x_est[1]) * 1000000);
+
 }
 
 void process_measurements(timestamp_t t, state_est_state_t *state_est_state) {

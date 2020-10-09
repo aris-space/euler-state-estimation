@@ -4,7 +4,6 @@
 #define STATE_EST_CONFIG_H_
 
 #define EULER_AV 1
-#define EULER_REC 0
 
 #define STATE_ESTIMATION_FREQUENCY 100
 #define NUM_SENSORBOARDS 3

@@ -492,7 +492,7 @@ float update_mav(float p1, float p2){
 		p_sum += p_array[i];
 	}
 
-	return p_sum/MAV_LEN;
+	return p_sum / MAV_LEN;
 }
 
 float get_velocity(float h, uint32_t t){

@@ -2,6 +2,7 @@
 #include <stdbool.h>
 #include <math.h>
 #include <stdio.h>
+#include "state_est_config.h"
 
 #ifndef MATH_UTILS_H_
 #define MATH_UTILS_H_
@@ -9,6 +10,8 @@
 #define max(x,y) ((x) >= (y)) ? (x) : (y)
 #define min(x,y) ((x) <= (y)) ? (x) : (y)
 
+
+#ifdef EULER_REC
 #define MAV_LEN 10
 
 /* update the moving average */
@@ -16,6 +19,7 @@ float update_mav(float p1, float p2);
 
 /* calculate velocity from moving average */
 float get_velocity(float h, uint32_t t);
+#endif
 
 /* Calculates the transpose of a Matrix */
 void eye(int dim, float A[dim][dim]);

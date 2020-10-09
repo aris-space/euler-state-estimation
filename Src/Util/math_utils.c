@@ -476,6 +476,8 @@ int polyfit(const float* const dependentValues,
     return 0;
 }
 
+#ifdef EULER_REC
+
 float p_array[MAV_LEN];
 float h_buffer[5];
 uint32_t t_buffer[5];
@@ -505,3 +507,4 @@ float get_velocity(float h, uint32_t t){
 	return (h_buffer[4] - h_buffer[0]) / (4 / 1000. * (t_buffer[4] - t_buffer[0]));
 }
 
+#endif

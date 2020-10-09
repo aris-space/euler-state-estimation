@@ -6,7 +6,6 @@
 #define EULER_AV 1
 
 #define STATE_ESTIMATION_FREQUENCY 100
-#define NUM_SENSORBOARDS 3
 #define MAX_NUM_SENSORS 3 // max between NUM_IMU and NUM_BAROMETER
 #define NUM_IMU 3
 #define NUM_BARO 3

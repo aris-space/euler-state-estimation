@@ -4,7 +4,6 @@
 #define EULER_REC 1
 
 #define STATE_ESTIMATION_FREQUENCY 40
-#define NUM_SENSORBOARDS 2
 #define MAX_NUM_SENSORS 2 // max between NUM_IMU and NUM_BAROMETER
 #define NUM_IMU 2
 #define NUM_BARO 2

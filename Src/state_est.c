@@ -57,12 +57,12 @@ void update_state_est_data(state_est_data_t *state_est_data, kf_state_t *kf_stat
 }
 
 void process_measurements(timestamp_t t, state_est_state_t *state_est_state) {
-    float temp_meas[NUM_SENSORBOARDS];
-    bool temp_meas_active[NUM_SENSORBOARDS];
-    float acc_x_meas[NUM_SENSORBOARDS];
-    bool acc_x_meas_active[NUM_SENSORBOARDS];
+    float temp_meas[NUM_BARO];
+    bool temp_meas_active[NUM_BARO];
+    float acc_x_meas[NUM_IMU];
+    bool acc_x_meas_active[NUM_IMU];
 
-    for (int i = 0; i < NUM_SENSORBOARDS; i++){
+    for (int i = 0; i < NUM_BARO; i++){
         /* barometer */
         if (state_est_state->state_est_meas.baro_data[i].ts > state_est_state->state_est_meas_prior.baro_data[i].ts) {
             state_est_state->kf_state.z[i] = state_est_state->state_est_meas.baro_data[i].pressure;

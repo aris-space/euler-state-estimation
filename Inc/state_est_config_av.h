@@ -30,6 +30,10 @@
 #define USE_BARO_IN_CONTROL_PHASE true // wether to use barometer measurements during control phase or exclude them because of dynamic pressure
 #define BIAS_RESET_AIRBRAKE_EXTENSION_THRESH 0.05 // threshold of airbrake extensino under which we use baro to reset bias
 
+/* use moving average to determine velocity instead of state estimation during main and drogue descent */
+#define USE_STATE_EST_DESCENT false // wether to use the state estimation during drogue and main descent
+#define MAX_LENGTH_MOVING_AVERAGE 10
+
 /* sensor elimination by extrapolation config */
 #define USE_SENSOR_ELIMINATION_BY_EXTRAPOLATION false // set to true to activate sensor elimination by extrapolation for barometer and temperature [m]
 #define MAX_LENGTH_ROLLING_MEMORY 18

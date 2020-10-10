@@ -80,4 +80,6 @@ void interpolate(float y[2], float x[2], float xp, float *yp);
 int polyfit(const float* const dependentValues, const float* const independentValues, 
             unsigned int countOfElements, unsigned int order, double* coefficients);
 
+void discretize(float frequency, int n, int m, float A[n][n], float B[n][m], float Ad[n][n], float Bd[n][m]);
+
 #endif

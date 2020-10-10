@@ -92,8 +92,8 @@ void process_measurements(timestamp_t t, state_est_state_t *state_est_state) {
     float acc_x_meas[NUM_IMU];
     bool acc_x_meas_active[NUM_IMU];
 
+    /* barometer */
     for (int i = 0; i < NUM_BARO; i++){
-        /* barometer */
         if (state_est_state->state_est_meas.baro_data[i].ts > state_est_state->state_est_meas_prior.baro_data[i].ts) {
             state_est_state->kf_state.z[i] = state_est_state->state_est_meas.baro_data[i].pressure;
             state_est_state->kf_state.z_active[i] = true;
@@ -121,8 +121,10 @@ void process_measurements(timestamp_t t, state_est_state_t *state_est_state) {
             temp_meas[i] = 0;
             temp_meas_active[i] = false;
         }
+    }
 
-        /* imu */
+    /* IMU */
+    for (int i = 0; i < NUM_IMU; i++){
         if (state_est_state->state_est_meas.imu_data[i].ts > state_est_state->state_est_meas_prior.imu_data[i].ts) {
             acc_x_meas[i] = state_est_state->state_est_meas.imu_data[i].acc_x;
             acc_x_meas_active[i] = true;
@@ -162,13 +164,17 @@ void process_measurements(timestamp_t t, state_est_state_t *state_est_state) {
         if (state_est_state->kf_state.z_active[i]){
             state_est_state->kf_state.num_z_active += 1;
         }
-        if (acc_x_meas_active[i]) {
-            u += acc_x_meas[i];
-            num_acc_x_meas_active += 1;
-        }
+    }
+    for (int i = 0; i < NUM_BARO; i++){
         if (temp_meas[i]) {
             temp_meas_mean += temp_meas[i];
             num_temp_meas_active += 1;
+        }
+    }
+    for (int i = 0; i < NUM_IMU; i++){
+        if (acc_x_meas_active[i]) {
+            u += acc_x_meas[i];
+            num_acc_x_meas_active += 1;
         }
     }
 

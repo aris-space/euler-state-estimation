@@ -14,10 +14,11 @@ void reset_state_est_state(float p_g, float T_g, state_est_state_t *state_est_st
 	reset_kf_state(&state_est_state->kf_state);
     update_state_est_data(&state_est_state->state_est_data, &state_est_state->kf_state, &state_est_state->env);
 
+    #if defined(USE_SENSOR_ELIMINATION_BY_EXTRAPOLATION) && USE_SENSOR_ELIMINATION_BY_EXTRAPOLATION == true
     memset(&state_est_state->baro_roll_mem, 0, sizeof(state_est_state->baro_roll_mem));
+    #endif
 
-	select_noise_models(&state_est_state->kf_state, &state_est_state->flight_phase_detection, 
-                        &state_est_state->env, &state_est_state->baro_roll_mem);
+	select_noise_models(state_est_state);
 }
 
 void state_est_step(timestamp_t t, state_est_state_t *state_est_state, bool bool_detect_flight_phase) {
@@ -25,8 +26,7 @@ void state_est_step(timestamp_t t, state_est_state_t *state_est_state, bool bool
 	process_measurements(t, state_est_state);
 
 	/* select noise models (dependent on detected flight phase and updated temperature in environment) */
-	select_noise_models(&state_est_state->kf_state, &state_est_state->flight_phase_detection,
-                        &state_est_state->env, &state_est_state->baro_roll_mem);
+	select_noise_models(state_est_state);
 	
 	kf_prediction(&state_est_state->kf_state);
 
@@ -77,13 +77,11 @@ void process_measurements(timestamp_t t, state_est_state_t *state_est_state) {
             }
 
             /* deactivate all barometer measurements during control phase if required because of dynamic pressure */
-            #ifdef USE_BARO_IN_CONTROL_PHASE
-                if (USE_BARO_IN_CONTROL_PHASE == false) {
-                    if (state_est_state->flight_phase_detection.flight_phase == CONTROL || 
-                       (state_est_state->flight_phase_detection.flight_phase == BIAS_RESET && 
-                            state_est_state->state_est_meas.airbrake_extension > BIAS_RESET_AIRBRAKE_EXTENSION_THRESH)) {
-                        state_est_state->kf_state.z_active[i] = false;
-                    }
+            #if defined(USE_BARO_IN_CONTROL_PHASE) && USE_BARO_IN_CONTROL_PHASE == false
+                if (state_est_state->flight_phase_detection.flight_phase == CONTROL || 
+                    (state_est_state->flight_phase_detection.flight_phase == BIAS_RESET && 
+                        state_est_state->state_est_meas.airbrake_extension > BIAS_RESET_AIRBRAKE_EXTENSION_THRESH)) {
+                    state_est_state->kf_state.z_active[i] = false;
                 }
             #endif
         } else {
@@ -105,14 +103,14 @@ void process_measurements(timestamp_t t, state_est_state_t *state_est_state) {
     }
 
     /* eliminate barometer measurements */
-    if (USE_SENSOR_ELIMINATION_BY_EXTRAPOLATION == 1) {
+    #if defined(USE_SENSOR_ELIMINATION_BY_EXTRAPOLATION) && USE_SENSOR_ELIMINATION_BY_EXTRAPOLATION == true
         if (state_est_state->baro_roll_mem.memory_length < MAX_LENGTH_ROLLING_MEMORY) {
             sensor_elimination_by_stdev(NUMBER_MEASUREMENTS, state_est_state->kf_state.z, state_est_state->kf_state.z_active);
         }
         sensor_elimination_by_extrapolation(t, NUMBER_MEASUREMENTS, state_est_state->kf_state.z, state_est_state->kf_state.z_active, &state_est_state->baro_roll_mem);
-    } else {
+    #else
         sensor_elimination_by_stdev(NUMBER_MEASUREMENTS, state_est_state->kf_state.z, state_est_state->kf_state.z_active);
-    }
+    #endif
 
     /* eliminate temperature measurements */
     sensor_elimination_by_stdev(NUMBER_MEASUREMENTS, temp_meas, temp_meas_active);
@@ -179,13 +177,12 @@ void process_measurements(timestamp_t t, state_est_state_t *state_est_state) {
     state_est_state->state_est_data.airbrake_extension = (int32_t)(state_est_state->state_est_meas.airbrake_extension * 1000000);
 } 
 
-void select_noise_models(kf_state_t *kf_state, flight_phase_detection_t *flight_phase_detection, env_t *env,
-                        extrapolation_rolling_memory_t *baro_roll_mem){
+void select_noise_models(state_est_state_t *state_est_state) {
     float accelerometer_x_stdev;
     float barometer_stdev;
 
     // TODO @maxi: add different noise models for each mach regime
-    switch (flight_phase_detection->flight_phase) {
+    switch (state_est_state->flight_phase_detection.flight_phase) {
         case AIRBRAKE_TEST:
         case TOUCHDOWN:
         case IDLE:
@@ -215,21 +212,23 @@ void select_noise_models(kf_state_t *kf_state, flight_phase_detection_t *flight_
     }
 
     for(int i = 0; i < NUMBER_PROCESS_NOISE; i++){
-        kf_state->Q[i][i] = pow(accelerometer_x_stdev, 2);
+        state_est_state->kf_state.Q[i][i] = pow(accelerometer_x_stdev, 2);
     }
 
     float p[1];
-    float h[1] = {kf_state->x_est[0]};
+    float h[1] = {state_est_state->kf_state.x_est[0]};
     bool h_active[1] = {true};
-    altitudeAGL2pressure(env, 1, h, h_active, p);
-    float h_grad = altitude_gradient(env, p[0]);
+    altitudeAGL2pressure(&state_est_state->env, 1, h, h_active, p);
+    float h_grad = altitude_gradient(&state_est_state->env, p[0]);
     float altitude_stdev = fabsf(barometer_stdev * h_grad);
 
     for(int i = 0; i < NUMBER_MEASUREMENTS; i++){
-        kf_state->R[i][i] = pow(altitude_stdev, 2);
+        state_est_state->kf_state.R[i][i] = pow(altitude_stdev, 2);
     }
 
-    baro_roll_mem->noise_stdev = barometer_stdev;
+    #if defined(USE_SENSOR_ELIMINATION_BY_EXTRAPOLATION) && USE_SENSOR_ELIMINATION_BY_EXTRAPOLATION == true
+        state_est_state->baro_roll_mem.noise_stdev = barometer_stdev;
+    #endif
 }
 
 void sensor_elimination_by_stdev(int n, float measurements[n], bool measurement_active[n]) {

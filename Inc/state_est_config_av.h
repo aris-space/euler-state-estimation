@@ -30,8 +30,9 @@
 #define USE_BARO_IN_CONTROL_PHASE true // wether to use barometer measurements during control phase or exclude them because of dynamic pressure
 #define BIAS_RESET_AIRBRAKE_EXTENSION_THRESH 0.05 // threshold of airbrake extensino under which we use baro to reset bias
 
+/* sensor elimination by extrapolation config */
+#define USE_SENSOR_ELIMINATION_BY_EXTRAPOLATION false // set to true to activate sensor elimination by extrapolation for barometer and temperature [m]
 #define MAX_LENGTH_ROLLING_MEMORY 18
-#define USE_SENSOR_ELIMINATION_BY_EXTRAPOLATION 0 // set to 1 to activate sensor elimination by extrapolation for barometer and temperature [m]
 #define EXTRAPOLATION_POLYFIT_DEGREE 2
 
 #endif

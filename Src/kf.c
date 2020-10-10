@@ -51,9 +51,12 @@ void reset_kf_state(kf_state_t *kf_state){
         memcpy(kf_state->Bd, B_init, sizeof(kf_state->Bd));
         memcpy(kf_state->Gd, G_init, sizeof(kf_state->Gd));
     } else {
-        memset(kf_state->Ad, 0, sizeof(kf_state->Ad));
-        memset(kf_state->Bd, 0, sizeof(kf_state->Bd));
-        memset(kf_state->Gd, 0, sizeof(kf_state->Gd));
+        float A[NUMBER_STATES][NUMBER_STATES] = {{0, 1, 0}, {0, 0, 1}, {0, 0, 0}};
+        float B[NUMBER_STATES][NUMBER_INPUTS] = {{0}, {1}, {0}};
+        float G[NUMBER_STATES][NUMBER_INPUTS] = {{0}, {1}, {0}};
+
+        discretize(STATE_ESTIMATION_FREQUENCY, NUMBER_STATES, NUMBER_INPUTS, A, B, kf_state->Ad, kf_state->Bd);
+        discretize(STATE_ESTIMATION_FREQUENCY, NUMBER_STATES, NUMBER_INPUTS, A, G, kf_state->Ad, kf_state->Gd);
     }
 
 	float x_est_init[NUMBER_STATES] = {0, 0, 0};

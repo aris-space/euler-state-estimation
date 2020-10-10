@@ -26,22 +26,23 @@ typedef struct state_est_state_t {
     kf_state_t kf_state;
     env_t env;
     flight_phase_detection_t flight_phase_detection;
+
+    #if defined(USE_SENSOR_ELIMINATION_BY_EXTRAPOLATION) && USE_SENSOR_ELIMINATION_BY_EXTRAPOLATION == true
     extrapolation_rolling_memory_t baro_roll_mem;
+    #endif
 } state_est_state_t;
 
 void reset_state_est_state(float p_g, float T_g, state_est_state_t *state_est_state);
 
 void state_est_step(timestamp_t t, state_est_state_t *state_est_state, bool bool_detect_flight_phase);
 
-void update_state_est_data(state_est_data_t *state_est_data, kf_state_t *kf_state, env_t *env);
+void update_state_est_data(state_est_state_t *state_est_state);
 
 void process_measurements(timestamp_t t, state_est_state_t *state_est_state);
-
-void select_noise_models(kf_state_t *kf_state, flight_phase_detection_t *flight_phase_detection, env_t *env,
-						extrapolation_rolling_memory_t *extrapolation_rolling_memory);
+void select_noise_models(state_est_state_t *state_est_state);
 
 void sensor_elimination_by_stdev(int n, float measurements[n], bool measurement_active[n]);
 void sensor_elimination_by_extrapolation(timestamp_t t, int n, float measurements[n], bool measurement_active[n], 
-						extrapolation_rolling_memory_t *extrapolation_rolling_memory);
+						                 extrapolation_rolling_memory_t *extrapolation_rolling_memory);
 
 #endif

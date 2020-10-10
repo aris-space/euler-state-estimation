@@ -47,10 +47,10 @@ typedef struct {
 /* State Estimation combined Data struct */
 typedef struct {
     /* pressure in [Pa] and temperature in [°C] */
-	baro_state_est_t baro_data[NUM_SENSORBOARDS];
+	baro_state_est_t baro_data[NUM_BARO];
     /* acceleration in [m/s^2] and angular velocity in [rad/s] */
     /* all in rocket frame where x-dir is along length of rocket */
-	imu_state_est_t imu_data[NUM_SENSORBOARDS];
+	imu_state_est_t imu_data[NUM_IMU];
 	/* Motor Feedback in range [0-1]*/
 	float airbrake_extension;
 } state_est_meas_t;

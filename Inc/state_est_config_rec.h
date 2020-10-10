@@ -3,8 +3,7 @@
 
 #define EULER_REC 1
 
-#define STATE_ESTIMATION_FREQUENCY 100
-#define NUM_SENSORBOARDS 2
+#define STATE_ESTIMATION_FREQUENCY 40
 #define MAX_NUM_SENSORS 2 // max between NUM_IMU and NUM_BAROMETER
 #define NUM_IMU 2
 #define NUM_BARO 2
@@ -21,8 +20,9 @@
 #define FPD_TOUCHDOWN_ALT_THRESH 400 // altitude above ground level to assume touchdown (together with velocity threshold) in [m]
 #define FPD_TOUCHDOWN_VEL_THRESH 2 // velocity threshold to assume touchdown (together with altitude threshold) in [m/s]
 
+/* sensor elimination by extrapolation config */
+#define USE_SENSOR_ELIMINATION_BY_EXTRAPOLATION false // set to true to activate sensor elimination by extrapolation for barometer and temperature [m]
 #define MAX_LENGTH_ROLLING_MEMORY 18
-#define USE_SENSOR_ELIMINATION_BY_EXTRAPOLATION 0 // set to 1 to activate sensor elimination by extrapolation for barometer and temperature
 #define EXTRAPOLATION_POLYFIT_DEGREE 2
 
 #endif

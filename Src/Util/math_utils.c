@@ -475,3 +475,44 @@ int polyfit(const float* const dependentValues,
 
     return 0;
 }
+
+void discretize(float frequency, int n, int m, float A[n][n], float B[n][m], float Ad[n][n], float Bd[n][m]) {
+    // Tustin transform might not work for our application
+    /*
+    float lambda = 0.00001f; // todo: this value still needs to be hand-tuned
+    float A_inv[2][2] = {0};
+    float I[2][2] = {0};
+    float half_A_T[2][2] = {0};
+    float I_plus_half_A_T[2][2] = {0};
+    float I_minus_half_A_T[2][2] = {0};
+    float I_minus_half_A_T_inv[2][2] = {0};
+    float e_A_T_minus_I[2][2] = {0};
+    float A_inv_e_A_T_minus_I[2][2] = {0};
+    const bool check1 = inverse(2, A, A_inv, lambda); // todo: should we implement something, when one of the checks gets false
+    eye(2, I);
+    scalarmatprod(2, 2, 0.5f*1.0f/CONTROLLER_SAMPLING_FREQ, A, half_A_T);
+    matadd(2, 2, I , half_A_T, I_plus_half_A_T);
+    matsub(2, 2, I, half_A_T, I_minus_half_A_T);
+    const bool check2 = inverse(2, I_minus_half_A_T, I_minus_half_A_T_inv, lambda);
+    matmul(2, 2, 2, I_plus_half_A_T, I_minus_half_A_T_inv, Ad, true);
+    matsub(2, 2, Ad, I, e_A_T_minus_I);
+    matmul(2, 2, 2, A_inv, e_A_T_minus_I, A_inv_e_A_T_minus_I, true);
+    matvecprod(2, 2, A_inv_e_A_T_minus_I, B, Bd, true);
+    */
+
+   /* forward Euler method */
+
+    /* Computation of Ad */
+    float eye_matrix[n][n];
+    memset(&eye_matrix, 0, sizeof(eye_matrix));
+    eye(n, eye_matrix);
+
+    float AT[n][n];
+    memset(&AT, 0, sizeof(AT));
+    
+    scalarmatprod(n, n, 1.0f / frequency, A, AT);
+    matadd(n, n, eye_matrix, AT, Ad);
+
+    /* Computation of Bd */
+    scalarmatprod(n, m, 1.0f / frequency, B, Bd);
+}

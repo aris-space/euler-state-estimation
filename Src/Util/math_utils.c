@@ -479,29 +479,3 @@ int polyfit(const float* const dependentValues,
 float p_array[MAV_LEN];
 float h_buffer[5];
 uint32_t t_buffer[5];
-
-float update_mav(float p1, float p2){
-
-	for (uint8_t i=0; i < MAV_LEN - 1; i++){
-		p_array[i] = p_array[i+1];
-	}
-	p_array[MAV_LEN-1] = (p1 + p2) / 2;
-
-	float p_sum = 0;
-	for (uint8_t i=0; i < MAV_LEN; i++){
-		p_sum += p_array[i];
-	}
-
-	return p_sum / MAV_LEN;
-}
-
-float get_velocity(float h, uint32_t t){
-	for (uint8_t i = 0; i < 4; i++){
-		h_buffer[i] = h_buffer[i+1];
-		t_buffer[i] = t_buffer[i+1];
-	}
-	h_buffer[4] = h;
-	t_buffer[4] = t;
-	return (h_buffer[4] - h_buffer[0]) / (4 / 1000. * (t_buffer[4] - t_buffer[0]));
-}
-

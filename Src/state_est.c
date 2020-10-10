@@ -39,8 +39,9 @@ void state_est_step(timestamp_t t, state_est_state_t *state_est_state, bool bool
 
 	update_state_est_data(&state_est_state->state_est_data, &state_est_state->kf_state, &state_est_state->env);
 
-    #if defined(EULER_REC) && EULER_REC == 1
+    #if USE_STATE_EST_DESCENT == false
     	float p_avg, alt, velocity;
+        values 
     	p_avg = update_mav(state_est_state->state_est_meas.baro_data[0].pressure, state_est_state->state_est_meas.baro_data[1].pressure);
 
     	if (state_est_state->flight_phase_detection.flight_phase >= DROGUE_DESCENT ){
@@ -348,4 +349,21 @@ void sensor_elimination_by_extrapolation(timestamp_t t, int n, float measurement
         extrapolation_rolling_memory->memory_length += num_active;
     }
 
+}
+
+float update_mav(mav_memory_t *mav_memory, int n, float values[n]){
+	for (int i=0; i < (mav_memory->memory_length - n); i++){
+		mav_memory->values[i] = mav_memory->values[i+n];
+	}
+
+    for (int i=0; i < n; i++){
+		mav_memory->values[mav_memory->memory_length-i] = values[i];
+	}
+
+	float values_sum = 0;
+	for (uint8_t i=0; i < mav_memory->memory_length; i++){
+		values_sum += mav_memory->values[i];
+	}
+
+	return values_sum / (float)mav_memory->memory_length;
 }

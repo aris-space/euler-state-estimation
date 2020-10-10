@@ -6,9 +6,8 @@
 #define EULER_AV 1
 
 #define STATE_ESTIMATION_FREQUENCY 100
-#define NUM_SENSORBOARDS 3
-#define MAX_NUM_SENSORS 3 // max between NUM_IMU and NUM_BAROMETER
-#define NUM_IMU 3
+#define MAX_NUM_SENSORS 6 // max between NUM_IMU and NUM_BAROMETER
+#define NUM_IMU 6
 #define NUM_BARO 3
 
 /* flight phase detection config */
@@ -16,7 +15,7 @@
 #define FPD_LIFTOFF_ACC_THRESH 20 // acceleration threshold to detect lift-off and enter thrusting flight phase [m/s^2]
 #define FPD_LIFTOFF_ALT_THRESH 150 // altitude above ground level to detect lift-off and enter thrusting flight phase [m]
 #define FPD_CONTROL_ACTIVE true // use control flight phases such as CONTROL, BIAS_RESET or APOGEE_APPROACH
-#define FPD_CONTROL_ACTIVATION_MACH_NUMBER 0.55 // the controller is activated below this mach number [mach]
+#define FPD_CONTROL_ACTIVATION_MACH_NUMBER 0.9 // the controller is activated below this mach number [mach]
 #define FPD_CONTROL_DEACTIVATION_MACH_NUMBER 0.1 // the apogee approach phase is activated below this mach number [mach]
 #define FPD_BIAS_RESET_ACTIVATION_MACH_NUMBER 0 // the bias reset window is activated below this mach number[mach]
 #define FPD_BIAS_RESET_TIME 0 // duration of the bias reset window. Set it to 0s to not use the bias reset window [s]
@@ -31,8 +30,9 @@
 #define USE_BARO_IN_CONTROL_PHASE true // wether to use barometer measurements during control phase or exclude them because of dynamic pressure
 #define BIAS_RESET_AIRBRAKE_EXTENSION_THRESH 0.05 // threshold of airbrake extensino under which we use baro to reset bias
 
+/* sensor elimination by extrapolation config */
+#define USE_SENSOR_ELIMINATION_BY_EXTRAPOLATION false // set to true to activate sensor elimination by extrapolation for barometer and temperature [m]
 #define MAX_LENGTH_ROLLING_MEMORY 18
-#define USE_SENSOR_ELIMINATION_BY_EXTRAPOLATION 0 // set to 1 to activate sensor elimination by extrapolation for barometer and temperature [m]
 #define EXTRAPOLATION_POLYFIT_DEGREE 2
 
 #endif

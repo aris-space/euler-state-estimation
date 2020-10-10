@@ -189,19 +189,11 @@ void process_measurements(timestamp_t t, state_est_state_t *state_est_state) {
     /* eliminate imu measurements */
     sensor_elimination_by_stdev(NUM_IMU, acc_x_meas, acc_x_meas_active);
     #if STATE_ESTIMATION_TYPE == 2
-        sensor_elimination_by_stdev(NUM_IMU, acc_y_meas, acc_y_meas_active);
-        sensor_elimination_by_stdev(NUM_IMU, acc_z_meas, acc_z_meas_active);
         sensor_elimination_by_stdev(NUM_IMU, gyro_x_meas, acc_x_meas_active);
-        sensor_elimination_by_stdev(NUM_IMU, gyro_y_meas, acc_y_meas_active);
-        sensor_elimination_by_stdev(NUM_IMU, gyro_z_meas, acc_z_meas_active);
     #endif
 
     /* update num_z_active */
     state_est_state->kf_state.num_z_active = 0;
-    /* take the average of the active accelerometers in rocket-x dir as the state estimation input */
-    float u = 0;
-    int num_acc_x_meas_active = 0;
-
     /* take the average of the temperature measurement  */
     float temp_meas_mean = 0;
     int num_temp_meas_active = 0;
@@ -217,11 +209,52 @@ void process_measurements(timestamp_t t, state_est_state_t *state_est_state) {
             num_temp_meas_active += 1;
         }
     }
+
+    /* take the average of the active accelerometers as the state estimation input */
+    float u[NUMBER_INPUTS] = {0};
+    float num_u_active[NUMBER_INPUTS] = {0};
     for (int i = 0; i < NUM_IMU; i++){
         if (acc_x_meas_active[i]) {
-            u += acc_x_meas[i];
-            num_acc_x_meas_active += 1;
+            u[0] += acc_x_meas[i];
+            num_u_active[0] += 1;
         }
+
+        #if STATE_ESTIMATION_TYPE == 2
+            if (acc_y_meas_active[i]) {
+                u[1] += acc_y_meas[i];
+                num_u_active[1] += 1;
+            }
+            if (acc_z_meas_active[i]) {
+                u[2] += acc_z_meas[i];
+                num_u_active[2] += 1;
+            }
+
+            if (gyro_x_meas_active[i]) {
+                u[3] += gyro_x_meas[i];
+                num_u_active[3] += 1;
+            }
+            if (gyro_y_meas_active[i]) {
+                u[4] += gyro_y_meas[i];
+                num_u_active[4] += 1;
+            }
+            if (gyro_z_meas_active[i]) {
+                u[5] += gyro_z_meas[i];
+                num_u_active[5] += 1;
+            }
+        #endif
+    }
+    for (int i = 0; i < NUMBER_INPUTS; i++){
+        /* we take the old acceleration from the previous timestep, if no acceleration measurements are active */
+        if (num_u_active[i] > 0){
+            u[i] /= num_u_active[i];
+        }
+
+        if (i == 0){
+            /* gravity compensation for accelerometer */
+            u[i] -= GRAVITATION;
+        }
+
+        state_est_state->kf_state.u[i] = u[i];
     }
 
     pressure2altitudeAGL(&state_est_state->env, NUMBER_MEASUREMENTS, state_est_state->kf_state.z, state_est_state->kf_state.z_active, state_est_state->kf_state.z);
@@ -249,13 +282,6 @@ void process_measurements(timestamp_t t, state_est_state_t *state_est_state) {
     	float altitude_avg = update_mav(&state_est_state->altitude_mav_mem, t, 
                                         alt_mean, state_est_state->state_est_data.altitude_raw_active);
     #endif
-
-    /* we take the old acceleration from the previous timestep, if no acceleration measurements are active */
-    if (num_acc_x_meas_active > 0){
-        u /= num_acc_x_meas_active;
-        /* gravity compensation for accelerometer */
-        state_est_state->kf_state.u[0] = u - GRAVITATION;
-    }
     
     if (num_temp_meas_active > 0){
         temp_meas_mean /= num_temp_meas_active;
@@ -267,41 +293,49 @@ void process_measurements(timestamp_t t, state_est_state_t *state_est_state) {
 } 
 
 void select_noise_models(state_est_state_t *state_est_state) {
-    float accelerometer_x_stdev;
-    float barometer_stdev;
+    float acc_x_stdev;
+    float acc_yz_stdev;
+    float gyro_x_stdev;
+    float gyro_yz_stdev;
+    float baro_stdev;
 
     // TODO @maxi: add different noise models for each mach regime
     switch (state_est_state->flight_phase_detection.flight_phase) {
         case AIRBRAKE_TEST:
         case TOUCHDOWN:
         case IDLE:
-            accelerometer_x_stdev = 0.0185409;
-            barometer_stdev = 1.869;
+            acc_x_stdev = 0.0185409;
+            acc_yz_stdev = 0.0185409;
+            baro_stdev = 1.869;
         break;
         case THRUSTING:
-            accelerometer_x_stdev = 1.250775;
-            barometer_stdev = 13.000;
+            acc_x_stdev = 1.250775;
+            acc_yz_stdev = 1.250775;
+            baro_stdev = 13.000;
         break;
         case BIAS_RESET:
         case APOGEE_APPROACH:
         case CONTROL:
         case COASTING:
-            accelerometer_x_stdev = 0.61803;
-            barometer_stdev = 7.380;
+            acc_x_stdev = 0.61803;
+            acc_yz_stdev = 0.61803;
+            baro_stdev = 7.380;
         break;
         case DROGUE_DESCENT:
         case MAIN_DESCENT:
-            accelerometer_x_stdev = 1.955133;
-            barometer_stdev = 3.896;
+            acc_x_stdev = 1.955133;
+            acc_yz_stdev = 1.955133;
+            baro_stdev = 3.896;
         break;
         case BALLISTIC_DESCENT:
-            accelerometer_x_stdev = 0.61803;
-            barometer_stdev = 7.380;
+            acc_x_stdev = 0.61803;
+            acc_yz_stdev = 0.61803;
+            baro_stdev = 7.380;
         break;
     }
 
     for(int i = 0; i < NUMBER_PROCESS_NOISE; i++){
-        state_est_state->kf_state.Q[i][i] = pow(accelerometer_x_stdev, 2);
+        state_est_state->kf_state.Q[i][i] = pow(acc_x_stdev, 2);
     }
 
     float p[1];
@@ -309,7 +343,7 @@ void select_noise_models(state_est_state_t *state_est_state) {
     bool h_active[1] = {true};
     altitudeAGL2pressure(&state_est_state->env, 1, h, h_active, p);
     float h_grad = altitude_gradient(&state_est_state->env, p[0]);
-    float altitude_stdev = fabsf(barometer_stdev * h_grad);
+    float altitude_stdev = fabsf(baro_stdev * h_grad);
 
     for(int i = 0; i < NUMBER_MEASUREMENTS; i++){
         state_est_state->kf_state.R[i][i] = pow(altitude_stdev, 2);

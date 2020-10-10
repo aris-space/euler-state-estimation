@@ -24,6 +24,7 @@ typedef struct mav_memory_t {
     int memory_length;
     timestamp_t timestamps[MAX_LENGTH_MOVING_AVERAGE];
     float values[MAX_LENGTH_MOVING_AVERAGE];
+    float avg_values[MAX_LENGTH_MOVING_AVERAGE];
 } mav_memory_t;
 
 typedef struct state_est_state_t {
@@ -55,5 +56,7 @@ void select_noise_models(state_est_state_t *state_est_state);
 void sensor_elimination_by_stdev(int n, float measurements[n], bool measurement_active[n]);
 void sensor_elimination_by_extrapolation(timestamp_t t, int n, float measurements[n], bool measurement_active[n], 
 						                 extrapolation_rolling_memory_t *extrapolation_rolling_memory);
+
+float update_mav(mav_memory_t *mav_memory, timestamp_t t, float measurement, bool measurement_active);
 
 #endif

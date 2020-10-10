@@ -20,6 +20,10 @@
 #define FPD_TOUCHDOWN_ALT_THRESH 400 // altitude above ground level to assume touchdown (together with velocity threshold) in [m]
 #define FPD_TOUCHDOWN_VEL_THRESH 2 // velocity threshold to assume touchdown (together with altitude threshold) in [m/s]
 
+/* use moving average to determine velocity instead of state estimation during main and drogue descent */
+#define USE_STATE_EST_DESCENT false // wether to use the state estimation during drogue and main descent
+#define MAX_LENGTH_MOVING_AVERAGE 10
+
 /* sensor elimination by extrapolation config */
 #define USE_SENSOR_ELIMINATION_BY_EXTRAPOLATION false // set to true to activate sensor elimination by extrapolation for barometer and temperature [m]
 #define MAX_LENGTH_ROLLING_MEMORY 18

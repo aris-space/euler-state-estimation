@@ -15,7 +15,11 @@ void reset_state_est_state(float p_g, float T_g, state_est_state_t *state_est_st
     update_state_est_data(state_est_state);
 
     #if defined(USE_SENSOR_ELIMINATION_BY_EXTRAPOLATION) && USE_SENSOR_ELIMINATION_BY_EXTRAPOLATION == true
-    memset(&state_est_state->baro_roll_mem, 0, sizeof(state_est_state->baro_roll_mem));
+        memset(&state_est_state->baro_roll_mem, 0, sizeof(state_est_state->baro_roll_mem));
+    #endif
+
+    #if USE_STATE_EST_DESCENT == false
+        memset(&state_est_state->altitude_mav_mem, 0, sizeof(state_est_state->altitude_mav_mem));
     #endif
 
 	select_noise_models(state_est_state);
@@ -38,6 +42,32 @@ void state_est_step(timestamp_t t, state_est_state_t *state_est_state, bool bool
 	}
 
 	update_state_est_data(state_est_state);
+
+    #if USE_STATE_EST_DESCENT == false
+        /* during drogue and main descent, the 1D state estimation might work badly,
+           thus we are computing the altitude and vertical velocity solely from the barometric data */
+        
+    	if ((state_est_state->flight_phase_detection.flight_phase == DROGUE_DESCENT || 
+            state_est_state->flight_phase_detection.flight_phase == MAIN_DESCENT) && 
+            state_est_state->state_est_data.altitude_raw_active == true){
+        
+            int alt_mav_mem_length = state_est_state->altitude_mav_mem.memory_length;
+            float alt_mav_delta = state_est_state->altitude_mav_mem.avg_values[0] - state_est_state->altitude_mav_mem.avg_values[alt_mav_mem_length-1];
+            float alt_mav_dt = (float)(state_est_state->altitude_mav_mem.timestamps[0] - state_est_state->altitude_mav_mem.timestamps[alt_mav_mem_length-1]) / 1000;
+
+            float velocity = 0;
+            if (alt_mav_mem_length > 1){
+                velocity = alt_mav_delta / alt_mav_dt;
+            }
+
+			state_est_state->state_est_data.position_world[2] = state_est_state->state_est_data.altitude_raw;
+			state_est_state->state_est_data.velocity_rocket[0] = (int32_t)(velocity * 1000);
+			state_est_state->state_est_data.velocity_world[2] = (int32_t)(velocity * 1000);
+			state_est_state->state_est_data.acceleration_rocket[0] = 0;
+			state_est_state->state_est_data.acceleration_world[2] = 0;
+			state_est_state->state_est_data.mach_number = (int32_t)(mach_number(&state_est_state->env, velocity) * 1000000);
+    	}
+    #endif
 
     if (bool_detect_flight_phase){
         detect_flight_phase(t, &state_est_state->flight_phase_detection, &state_est_state->state_est_data);
@@ -160,6 +190,13 @@ void process_measurements(timestamp_t t, state_est_state_t *state_est_state) {
     } else {  
         state_est_state->state_est_data.altitude_raw_active = false;
     }
+
+    #if USE_STATE_EST_DESCENT == false
+        /* during drogue and main descent, the 1D state estimation might work badly,
+           thus we are computing the altitude and vertical velocity solely from the barometric data */
+    	float altitude_avg = update_mav(&state_est_state->altitude_mav_mem, t, 
+                                        alt_mean, state_est_state->state_est_data.altitude_raw_active);
+    #endif
 
     /* we take the old acceleration from the previous timestep, if no acceleration measurements are active */
     if (num_acc_x_meas_active > 0){
@@ -323,4 +360,30 @@ void sensor_elimination_by_extrapolation(timestamp_t t, int n, float measurement
         extrapolation_rolling_memory->memory_length += num_active;
     }
 
+}
+
+float update_mav(mav_memory_t *mav_memory, timestamp_t t, float measurement, bool measurement_active) {
+    if (measurement_active == true) {
+        if (mav_memory->memory_length < MAX_LENGTH_MOVING_AVERAGE) {
+            mav_memory->memory_length += 1;
+        }
+
+        for (int i=(mav_memory->memory_length-1); i > 0; i--) {
+		    mav_memory->timestamps[i] = mav_memory->timestamps[i-1];
+            mav_memory->values[i] = mav_memory->values[i-1];
+            mav_memory->avg_values[i] = mav_memory->avg_values[i-1];
+        }
+        
+        mav_memory->timestamps[0] = t;
+        mav_memory->values[0] = measurement;
+
+        float values_sum = 0;
+        for (int i=0; i < mav_memory->memory_length; i++) {
+            values_sum += mav_memory->values[i];
+        }
+
+        mav_memory->avg_values[0] = values_sum / (float)mav_memory->memory_length;
+    } 
+
+    return mav_memory->avg_values[0];
 }

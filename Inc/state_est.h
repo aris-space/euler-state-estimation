@@ -36,7 +36,7 @@ void reset_state_est_state(float p_g, float T_g, state_est_state_t *state_est_st
 
 void state_est_step(timestamp_t t, state_est_state_t *state_est_state, bool bool_detect_flight_phase);
 
-void update_state_est_data(state_est_data_t *state_est_data, kf_state_t *kf_state, env_t *env);
+void update_state_est_data(state_est_state_t *state_est_state);
 
 void process_measurements(timestamp_t t, state_est_state_t *state_est_state);
 void select_noise_models(state_est_state_t *state_est_state);

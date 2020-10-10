@@ -12,7 +12,7 @@ void reset_state_est_state(float p_g, float T_g, state_est_state_t *state_est_st
     update_env(&state_est_state->env, T_g);
 
 	reset_kf_state(&state_est_state->kf_state);
-    update_state_est_data(&state_est_state->state_est_data, &state_est_state->kf_state, &state_est_state->env);
+    update_state_est_data(state_est_state);
 
     #if defined(USE_SENSOR_ELIMINATION_BY_EXTRAPOLATION) && USE_SENSOR_ELIMINATION_BY_EXTRAPOLATION == true
     memset(&state_est_state->baro_roll_mem, 0, sizeof(state_est_state->baro_roll_mem));
@@ -37,7 +37,7 @@ void state_est_step(timestamp_t t, state_est_state_t *state_est_state, bool bool
 		memcpy(&state_est_state->kf_state.x_est, &state_est_state->kf_state.x_priori, sizeof(state_est_state->kf_state.x_priori));
 	}
 
-	update_state_est_data(&state_est_state->state_est_data, &state_est_state->kf_state, &state_est_state->env);
+	update_state_est_data(state_est_state);
 
     if (bool_detect_flight_phase){
         detect_flight_phase(t, &state_est_state->flight_phase_detection, &state_est_state->state_est_data);
@@ -47,13 +47,13 @@ void state_est_step(timestamp_t t, state_est_state_t *state_est_state, bool bool
 	memcpy(&state_est_state->state_est_meas_prior, &state_est_state->state_est_meas, sizeof(state_est_state->state_est_meas));
 }
 
-void update_state_est_data(state_est_data_t *state_est_data, kf_state_t *kf_state, env_t *env) {
-    state_est_data->position_world[2] = (int32_t)(kf_state->x_est[0] * 1000);
-    state_est_data->velocity_rocket[0] = (int32_t)(kf_state->x_est[1] * 1000);
-    state_est_data->velocity_world[2] = (int32_t)(kf_state->x_est[1] * 1000);
-    state_est_data->acceleration_rocket[0] = (int32_t)(kf_state->u[0] * 1000);
-    state_est_data->acceleration_world[2] = (int32_t)(kf_state->u[0] * 1000);
-    state_est_data->mach_number = (int32_t)(mach_number(env, kf_state->x_est[1]) * 1000000);
+void update_state_est_data(state_est_state_t *state_est_state) {
+    state_est_state->state_est_data.position_world[2] = (int32_t)(state_est_state->kf_state.x_est[0] * 1000);
+    state_est_state->state_est_data.velocity_rocket[0] = (int32_t)(state_est_state->kf_state.x_est[1] * 1000);
+    state_est_state->state_est_data.velocity_world[2] = (int32_t)(state_est_state->kf_state.x_est[1] * 1000);
+    state_est_state->state_est_data.acceleration_rocket[0] = (int32_t)(state_est_state->kf_state.u[0] * 1000);
+    state_est_state->state_est_data.acceleration_world[2] = (int32_t)(state_est_state->kf_state.u[0] * 1000);
+    state_est_state->state_est_data.mach_number = (int32_t)(mach_number(&state_est_state->env, state_est_state->kf_state.x_est[1]) * 1000000);
 }
 
 void process_measurements(timestamp_t t, state_est_state_t *state_est_state) {

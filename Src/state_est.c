@@ -145,10 +145,10 @@ void process_measurements(timestamp_t t, state_est_state_t *state_est_state) {
     #endif
 
     /* eliminate temperature measurements */
-    sensor_elimination_by_stdev(NUMBER_MEASUREMENTS, temp_meas, temp_meas_active);
+    sensor_elimination_by_stdev(NUM_BARO, temp_meas, temp_meas_active);
 
     /* eliminate accelerometer in rocket x-dir measurements */
-    sensor_elimination_by_stdev(NUMBER_MEASUREMENTS, acc_x_meas, acc_x_meas_active);
+    sensor_elimination_by_stdev(NUM_IMU, acc_x_meas, acc_x_meas_active);
 
     /* update num_z_active */
     state_est_state->kf_state.num_z_active = 0;

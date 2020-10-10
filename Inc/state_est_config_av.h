@@ -5,6 +5,7 @@
 
 #define EULER_AV 1
 
+#define STATE_ESTIMATION_TYPE 1 // 1 = 1D state estimation, 2 = 3D state estimation
 #define STATE_ESTIMATION_FREQUENCY 100
 #define MAX_NUM_SENSORS 6 // max between NUM_IMU and NUM_BAROMETER
 #define NUM_IMU 6

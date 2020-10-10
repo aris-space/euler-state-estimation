@@ -56,7 +56,7 @@ void reset_kf_state(kf_state_t *kf_state){
         memset(kf_state->Gd, 0, sizeof(kf_state->Gd));
     }
 
-	float x_est_init[NUMBER_STATES] = {0, 0, 0};
+	float x_est_init[NUMBER_STATES] = {0};
 	float P_est_init[NUMBER_STATES][NUMBER_STATES] = {{1.0E-9, 0, 0}, {0, 1.0E-12, 0}, {0, 0, 0}};
 
     memcpy(kf_state->x_est, x_est_init, sizeof(x_est_init));

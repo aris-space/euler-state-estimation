@@ -8,8 +8,14 @@
 #define EKF_H_
 
 /* Matrix Sizes */
+#if STATE_ESTIMATION_TYPE == 1
 #define NUMBER_STATES 3	/* NUMBER_STATES x NUMBER_STATES -> A Matrix */
 #define NUMBER_INPUTS 1	/* NUMBER_STATES x NUMBER_INPUTS -> B Matrix */
+#elif STATE_ESTIMATION_TYPE == 2
+#define NUMBER_STATES 7	/* NUMBER_STATES x NUMBER_STATES -> A Matrix */
+#define NUMBER_INPUTS 3	/* NUMBER_STATES x NUMBER_INPUTS -> B Matrix */
+#endif
+
 #define NUMBER_PROCESS_NOISE 1	/* NUMBER_STATES x NUMBER_PROCESS_NOISE -> G Matrix */
 #define NUMBER_MEASUREMENTS NUM_BARO /* NUMBER_MEASUREMENTS x NUMBER_STATES -> H Matrix */
 #define LAMBDA 0.0001		/* Lambda for Moore Penrose Pseudoinverse */

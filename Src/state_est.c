@@ -16,6 +16,11 @@ void reset_state_est_state(float p_g, float T_g, state_est_state_t *state_est_st
 
     memset(&state_est_state->baro_roll_mem, 0, sizeof(state_est_state->baro_roll_mem));
 
+    #if USE_STATE_EST_DESCENT == false
+        memset(&state_est_state->pressure_mav_mem, 0, sizeof(state_est_state->pressure_mav_mem));
+        memset(&state_est_state->altitude_mav_mem, 0, sizeof(state_est_state->altitude_mav_mem));
+    #endif
+
 	select_noise_models(&state_est_state->kf_state, &state_est_state->flight_phase_detection, 
                         &state_est_state->env, &state_est_state->baro_roll_mem);
 }
@@ -41,25 +46,31 @@ void state_est_step(timestamp_t t, state_est_state_t *state_est_state, bool bool
 
     #if USE_STATE_EST_DESCENT == false
     	float p_avg, alt, velocity;
-        values 
-    	p_avg = update_mav(state_est_state->state_est_meas.baro_data[0].pressure, state_est_state->state_est_meas.baro_data[1].pressure);
+    	altitude_avg = update_mav(&state_est_state->altitude_mav_mem, t, NUMBER_MEASUREMENTS, state_est_state->kf_state.z, 
+                                  state_est_state->kf_state.z_active);
 
-    	if (state_est_state->flight_phase_detection.flight_phase >= DROGUE_DESCENT ){
+    	if ((state_est_state->flight_phase_detection.flight_phase == DROGUE_DESCENT || 
+            state_est_state->flight_phase_detection.flight_phase == MAIN_DESCENT) && 
+            state_est_state->state_est_data.altitude_raw_active == true){
 			float p_a[1];
 			p_a[0] = p_avg;
 			bool p_ac[1] = {1};
 			float h[1];
+ 
+            p_mav[]
 
 			pressure2altitudeAGL(&state_est_state->env, 1, p_a, p_ac, h);
         
 			velocity = get_velocity(h[0],state_est_state->state_est_meas.baro_data[0].ts);
-			alt = h[0];
-			state_est_state->state_est_data.position_world[2] = (int32_t)(alt * 1000);
+
+			state_est_state->state_est_data.position_world[2] = state_est_state->state_est_data.altitude_raw;
 			state_est_state->state_est_data.velocity_rocket[0] = (int32_t)(velocity * 1000);
 			state_est_state->state_est_data.velocity_world[2] = (int32_t)(velocity * 1000);
 			state_est_state->state_est_data.acceleration_rocket[0] = 0;
 			state_est_state->state_est_data.acceleration_world[2] = 0;
-			state_est_state->state_est_data.mach_number = 0;
+
+            float mach_number = mach_number(&state_est_state->env, velocity)
+			state_est_state->state_est_data.mach_number = (int32_t)(mach_number * 1000000);
     	}
     #endif
 
@@ -351,7 +362,19 @@ void sensor_elimination_by_extrapolation(timestamp_t t, int n, float measurement
 
 }
 
-float update_mav(mav_memory_t *mav_memory, int n, float values[n]){
+float update_mav(mav_memory_t *mav_memory, timestamp_t t, int n, float values[n], bool values_active[n]){
+    float values_sum = 0;
+    int values_active_sum = 0;
+    for (int i=0; i < n; i++) {
+        if (values_active[i] == true) {
+            values_active_sum += 1;
+            values_sum += values[i];
+        }
+    }
+    if (values_active_sum > 0) {
+        values_sum /= values_active_sum;
+    }
+
 	for (int i=0; i < (mav_memory->memory_length - n); i++){
 		mav_memory->values[i] = mav_memory->values[i+n];
 	}

@@ -475,7 +475,3 @@ int polyfit(const float* const dependentValues,
 
     return 0;
 }
-
-float p_array[MAV_LEN];
-float h_buffer[5];
-uint32_t t_buffer[5];

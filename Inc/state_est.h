@@ -36,7 +36,7 @@ typedef struct state_est_state_t {
     extrapolation_rolling_memory_t baro_roll_mem;
 
     #if USE_STATE_EST_DESCENT == false
-    mav_memory_t baro_mav_mem;
+    mav_memory_t altitude_mav_mem;
     #endif
 } state_est_state_t;
 

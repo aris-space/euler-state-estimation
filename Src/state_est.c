@@ -87,12 +87,9 @@ void update_state_est_data(state_est_state_t *state_est_state) {
 }
 
 void process_measurements(timestamp_t t, state_est_state_t *state_est_state) {
+    /* barometer */
     float temp_meas[NUM_BARO];
     bool temp_meas_active[NUM_BARO];
-    float acc_x_meas[NUM_IMU];
-    bool acc_x_meas_active[NUM_IMU];
-
-    /* barometer */
     for (int i = 0; i < NUM_BARO; i++){
         if (state_est_state->state_est_meas.baro_data[i].ts > state_est_state->state_est_meas_prior.baro_data[i].ts) {
             state_est_state->kf_state.z[i] = state_est_state->state_est_meas.baro_data[i].pressure;
@@ -124,15 +121,57 @@ void process_measurements(timestamp_t t, state_est_state_t *state_est_state) {
     }
 
     /* IMU */
-    for (int i = 0; i < NUM_IMU; i++){
-        if (state_est_state->state_est_meas.imu_data[i].ts > state_est_state->state_est_meas_prior.imu_data[i].ts) {
-            acc_x_meas[i] = state_est_state->state_est_meas.imu_data[i].acc_x;
-            acc_x_meas_active[i] = true;
-        } else {
-            acc_x_meas[i] = 0;
-            acc_x_meas_active[i] = false;
+    #if STATE_ESTIMATION_TYPE == 1
+        float acc_x_meas[NUM_IMU];
+        bool acc_x_meas_active[NUM_IMU];
+        for (int i = 0; i < NUM_IMU; i++){
+            if (state_est_state->state_est_meas.imu_data[i].ts > state_est_state->state_est_meas_prior.imu_data[i].ts) {
+                acc_x_meas[i] = state_est_state->state_est_meas.imu_data[i].acc_x;
+                acc_x_meas_active[i] = true;
+            } else {
+                acc_x_meas[i] = 0;
+                acc_x_meas_active[i] = false;
+            }
         }
-    }
+    #elif STATE_ESTIMATION_TYPE == 2
+        float acc_x_meas[NUM_IMU], acc_y_meas[NUM_IMU], acc_z_meas[NUM_IMU];
+        bool acc_x_meas_active[NUM_IMU], acc_y_meas_active[NUM_IMU], acc_z_meas_active[NUM_IMU];
+
+        float gyro_x_meas[NUM_IMU], gyro_y_meas[NUM_IMU], gyro_z_meas[NUM_IMU];
+        bool gyro_x_meas_active[NUM_IMU], gyro_y_meas_active[NUM_IMU], gyro_z_meas_active[NUM_IMU];
+        
+        for (int i = 0; i < NUM_IMU; i++){
+            if (state_est_state->state_est_meas.imu_data[i].ts > state_est_state->state_est_meas_prior.imu_data[i].ts) {
+                acc_x_meas[i] = state_est_state->state_est_meas.imu_data[i].acc_x;
+                acc_y_meas[i] = state_est_state->state_est_meas.imu_data[i].acc_y;
+                acc_z_meas[i] = state_est_state->state_est_meas.imu_data[i].acc_z;
+                acc_x_meas_active[i] = true;
+                acc_y_meas_active[i] = true;
+                acc_z_meas_active[i] = true;
+
+                gyro_x_meas[i] = state_est_state->state_est_meas.imu_data[i].gyro_x;
+                gyro_y_meas[i] = state_est_state->state_est_meas.imu_data[i].gyro_y;
+                gyro_z_meas[i] = state_est_state->state_est_meas.imu_data[i].gyro_z;
+                gyro_x_meas_active[i] = true;
+                gyro_y_meas_active[i] = true;
+                gyro_z_meas_active[i] = true;
+            } else {
+                acc_x_meas[i] = 0;
+                acc_y_meas[i] = 0;
+                acc_z_meas[i] = 0;
+                acc_x_meas_active[i] = false;
+                acc_y_meas_active[i] = false;
+                acc_z_meas_active[i] = false;
+
+                gyro_x_meas[i] = 0;
+                gyro_y_meas[i] = 0;
+                gyro_z_meas[i] = 0;
+                gyro_x_meas_active[i] = false;
+                gyro_y_meas_active[i] = false;
+                gyro_z_meas_active[i] = false;
+            }
+        }
+    #endif
 
     /* eliminate barometer measurements */
     #if defined(USE_SENSOR_ELIMINATION_BY_EXTRAPOLATION) && USE_SENSOR_ELIMINATION_BY_EXTRAPOLATION == true
@@ -147,8 +186,15 @@ void process_measurements(timestamp_t t, state_est_state_t *state_est_state) {
     /* eliminate temperature measurements */
     sensor_elimination_by_stdev(NUMBER_MEASUREMENTS, temp_meas, temp_meas_active);
 
-    /* eliminate accelerometer in rocket x-dir measurements */
+    /* eliminate imu measurements */
     sensor_elimination_by_stdev(NUMBER_MEASUREMENTS, acc_x_meas, acc_x_meas_active);
+    #if STATE_ESTIMATION_TYPE == 2
+        sensor_elimination_by_stdev(NUM_IMU, acc_y_meas, acc_y_meas_active);
+        sensor_elimination_by_stdev(NUM_IMU, acc_z_meas, acc_z_meas_active);
+        sensor_elimination_by_stdev(NUM_IMU, gyro_x_meas, acc_x_meas_active);
+        sensor_elimination_by_stdev(NUM_IMU, gyro_y_meas, acc_y_meas_active);
+        sensor_elimination_by_stdev(NUM_IMU, gyro_z_meas, acc_z_meas_active);
+    #endif
 
     /* update num_z_active */
     state_est_state->kf_state.num_z_active = 0;

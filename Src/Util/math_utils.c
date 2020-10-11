@@ -522,3 +522,33 @@ void discretize(float frequency, int n, int m, float A[n][n], float B[n][m], flo
     /* Computation of Bd */
     scalarmatprod(n, m, 1.0f / frequency, B, Bd);
 }
+
+void body_to_world_rotation(float roll_angle, float pitch_angle, float yaw_angle, float vector[3], float rotated_vector[3]) {
+    /* inputs: roll angle phi, pitch angle theta, yaw angle psi in radians, vector in body coordinate system */
+    /* we are using the aerospace convention of roll-pitch-yaw angles of Tait-Bryan angles (z-y'-x'') */
+    /* DIN 9300 https://de.wikipedia.org/wiki/Eulersche_Winkel#Roll-,_Nick-_und_Gierwinkel:_z-y′-x″-Konvention */
+    float phi = roll_angle;
+    float theta = pitch_angle;
+    float psi = yaw_angle;
+
+    float R[3][3] = {{cosf(theta)*cosf(psi), sinf(phi)*sinf(theta)*cosf(psi)-cosf(phi)*sinf(psi), cosf(phi)*sinf(theta)*cosf(psi)+sinf(phi)*sinf(psi)},
+                     {cosf(theta)*sinf(psi), sinf(phi)*sinf(theta)*sinf(psi)+cosf(phi)*cosf(psi), cosf(phi)*sinf(theta)*sinf(psi)-sinf(phi)*cosf(psi)},
+                     {-sinf(theta), sinf(phi)*cosf(theta), cosf(phi)*cosf(theta)}};
+
+    matvecprod(3, 3, R, vector, rotated_vector, true);
+}
+
+void world_to_body_rotation(float roll_angle, float pitch_angle, float yaw_angle, float vector[3], float rotated_vector[3]) {
+    /* inputs: roll angle phi, pitch angle theta, yaw angle psi in radians, vector in body coordinate system */
+    /* we are using the aerospace convention of roll-pitch-yaw angles of Tait-Bryan angles (z-y'-x'') */
+    /* DIN 9300 https://de.wikipedia.org/wiki/Eulersche_Winkel#Roll-,_Nick-_und_Gierwinkel:_z-y′-x″-Konvention */
+    float phi = roll_angle;
+    float theta = pitch_angle;
+    float psi = yaw_angle;
+
+    float R[3][3] = {{cosf(theta)*cosf(psi), cosf(theta)*sinf(psi), -sinf(theta)},
+                     {sinf(phi)*sinf(theta)*cosf(psi)-cosf(phi)*sinf(psi), sinf(phi)*sinf(theta)*sinf(psi)+cosf(phi)*cosf(psi), sinf(phi)*cosf(theta)},
+                     {cosf(phi)*sinf(theta)*cosf(psi)+sinf(phi)*sinf(psi), cosf(phi)*sinf(theta)*sinf(psi)-sinf(phi)*cosf(psi), cosf(phi)*cosf(theta)}};
+
+    matvecprod(3, 3, R, vector, rotated_vector, true);
+}

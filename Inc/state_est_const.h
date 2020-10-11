@@ -66,6 +66,12 @@ typedef struct {
 	int32_t altitude_raw;
 	bool altitude_raw_active;
 	int32_t airbrake_extension;
+
+	#if STATE_ESTIMATION_TYPE == 2
+	int32_t attitude_world[3];
+	int32_t angular_velocity_world[3];
+	int32_t angular_velocity_rocket[3];
+	#endif
 } state_est_data_t;
 
 /* FSM States */

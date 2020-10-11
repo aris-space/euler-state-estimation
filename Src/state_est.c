@@ -43,7 +43,7 @@ void state_est_step(timestamp_t t, state_est_state_t *state_est_state, bool bool
 
 	update_state_est_data(state_est_state);
 
-    #if USE_STATE_EST_DESCENT == false
+    #if STATE_ESTIMATION_TYPE == 1 && USE_STATE_EST_DESCENT == false
         /* during drogue and main descent, the 1D state estimation might work badly,
            thus we are computing the altitude and vertical velocity solely from the barometric data */
         
@@ -78,12 +78,39 @@ void state_est_step(timestamp_t t, state_est_state_t *state_est_state, bool bool
 }
 
 void update_state_est_data(state_est_state_t *state_est_state) {
-    state_est_state->state_est_data.position_world[2] = (int32_t)(state_est_state->kf_state.x_est[0] * 1000);
-    state_est_state->state_est_data.velocity_rocket[0] = (int32_t)(state_est_state->kf_state.x_est[1] * 1000);
-    state_est_state->state_est_data.velocity_world[2] = (int32_t)(state_est_state->kf_state.x_est[1] * 1000);
-    state_est_state->state_est_data.acceleration_rocket[0] = (int32_t)(state_est_state->kf_state.u[0] * 1000);
-    state_est_state->state_est_data.acceleration_world[2] = (int32_t)(state_est_state->kf_state.u[0] * 1000);
-    state_est_state->state_est_data.mach_number = (int32_t)(mach_number(&state_est_state->env, state_est_state->kf_state.x_est[1]) * 1000000);
+    #if STATE_ESTIMATION_TYPE == 1
+        state_est_state->state_est_data.position_world[2] = (int32_t)(state_est_state->kf_state.x_est[0] * 1000);
+        state_est_state->state_est_data.velocity_rocket[0] = (int32_t)(state_est_state->kf_state.x_est[1] * 1000);
+        state_est_state->state_est_data.velocity_world[2] = (int32_t)(state_est_state->kf_state.x_est[1] * 1000);
+        state_est_state->state_est_data.acceleration_rocket[0] = (int32_t)(state_est_state->kf_state.u[0] * 1000);
+        state_est_state->state_est_data.acceleration_world[2] = (int32_t)(state_est_state->kf_state.u[0] * 1000);
+        state_est_state->state_est_data.mach_number = (int32_t)(mach_number(&state_est_state->env, state_est_state->kf_state.x_est[1]) * 1000000);
+    #elif STATE_ESTIMATION_TYPE == 2
+        float velocity_world[3] = {state_est_state->kf_state.x_est[3], state_est_state->kf_state.x_est[4], state_est_state->kf_state.x_est[5]};
+        float attitude_world[3] = {state_est_state->kf_state.x_est[6], state_est_state->kf_state.x_est[7], state_est_state->kf_state.x_est[8]};
+        float acceleration_world[3] = {state_est_state->kf_state.u[0], state_est_state->kf_state.u[1], state_est_state->kf_state.u[2]};
+        float angular_velocity_world[3] = {state_est_state->kf_state.u[3], state_est_state->kf_state.u[4], state_est_state->kf_state.u[5]};
+
+        float velocity_rocket[3] = {0};
+        world_to_body_rotation(attitude_world[0], attitude_world[1], attitude_world[2], velocity_world, velocity_rocket);
+
+        float angular_velocity_rocket[3] = {0};
+        world_to_body_rotation(attitude_world[0], attitude_world[1], attitude_world[2], angular_velocity_world, angular_velocity_rocket);
+
+        float acceleration_rocket[3] = {0};
+        world_to_body_rotation(attitude_world[0], attitude_world[1], attitude_world[2], acceleration_world, acceleration_rocket);
+
+        for (int i = 0; i < 3; i++) {
+            state_est_state->state_est_data.position_world[i] = (int32_t)(state_est_state->kf_state.x_est[i] * 1000);
+            state_est_state->state_est_data.attitude_world[i] = (int32_t)(attitude_world[i] * 1000000);
+            state_est_state->state_est_data.velocity_world[i] = (int32_t)(velocity_world[i] * 1000);
+            state_est_state->state_est_data.velocity_rocket[i] = (int32_t)(velocity_rocket[i] * 1000);
+            state_est_state->state_est_data.angular_velocity_world[i] = (int32_t)(angular_velocity_world[i] * 1000000);
+            state_est_state->state_est_data.angular_velocity_rocket[i] = (int32_t)(angular_velocity_rocket[i] * 1000000);
+            state_est_state->state_est_data.acceleration_world[i] = (int32_t)(acceleration_world[i] * 1000);
+            state_est_state->state_est_data.acceleration_rocket[i] = (int32_t)(acceleration_rocket[i] * 1000);
+        }
+    #endif
 }
 
 void process_measurements(timestamp_t t, state_est_state_t *state_est_state) {
@@ -276,7 +303,7 @@ void process_measurements(timestamp_t t, state_est_state_t *state_est_state) {
         state_est_state->state_est_data.altitude_raw_active = false;
     }
 
-    #if USE_STATE_EST_DESCENT == false
+    #if STATE_ESTIMATION_TYPE == 1 && USE_STATE_EST_DESCENT == false
         /* during drogue and main descent, the 1D state estimation might work badly,
            thus we are computing the altitude and vertical velocity solely from the barometric data */
     	float altitude_avg = update_mav(&state_est_state->altitude_mav_mem, t, 

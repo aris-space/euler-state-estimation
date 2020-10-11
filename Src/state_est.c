@@ -320,11 +320,11 @@ void process_measurements(timestamp_t t, state_est_state_t *state_est_state) {
 } 
 
 void select_noise_models(state_est_state_t *state_est_state) {
-    float acc_x_stdev;
-    float acc_yz_stdev;
-    float gyro_x_stdev;
-    float gyro_yz_stdev;
-    float baro_stdev;
+    float acc_x_stdev = 0;
+    float acc_yz_stdev = 0;
+    float gyro_x_stdev = 0.00872665; // TODO: insert noise-modelled values
+    float gyro_yz_stdev = 0.00872665; // TODO: insert noise-modelled values
+    float baro_stdev = 0;
 
     // TODO @maxi: add different noise models for each mach regime
     switch (state_est_state->flight_phase_detection.flight_phase) {
@@ -361,19 +361,34 @@ void select_noise_models(state_est_state_t *state_est_state) {
         break;
     }
 
-    for(int i = 0; i < NUMBER_PROCESS_NOISE; i++){
-        state_est_state->kf_state.Q[i][i] = pow(acc_x_stdev, 2);
-    }
+    /* update process noise matrix */
+    state_est_state->kf_state.Q[0][0] = powf(acc_x_stdev, 2);
 
+    #if STATE_ESTIMATION_TYPE == 2
+        state_est_state->kf_state.Q[1][1] = powf(acc_yz_stdev, 2);
+        state_est_state->kf_state.Q[2][2] = powf(acc_yz_stdev, 2);
+        state_est_state->kf_state.Q[3][3] = powf(gyro_x_stdev, 2);
+        state_est_state->kf_state.Q[4][4] = powf(gyro_yz_stdev, 2);
+        state_est_state->kf_state.Q[5][5] = powf(gyro_yz_stdev, 2);
+    #endif
+
+    float altitude = 0;
+    #if STATE_ESTIMATION_TYPE == 1
+        altitude = state_est_state->kf_state.x_est[0];
+    #elif STATE_ESTIMATION_TYPE == 2
+        altitude = state_est_state->kf_state.x_est[2];
+    #endif 
+
+    /* update measurement noise matrix */
     float p[1];
-    float h[1] = {state_est_state->kf_state.x_est[0]};
+    float h[1] = {altitude};
     bool h_active[1] = {true};
     altitudeAGL2pressure(&state_est_state->env, 1, h, h_active, p);
     float h_grad = altitude_gradient(&state_est_state->env, p[0]);
     float altitude_stdev = fabsf(baro_stdev * h_grad);
 
     for(int i = 0; i < NUMBER_MEASUREMENTS; i++){
-        state_est_state->kf_state.R[i][i] = pow(altitude_stdev, 2);
+        state_est_state->kf_state.R[i][i] = powf(altitude_stdev, 2);
     }
 
     #if defined(USE_SENSOR_ELIMINATION_BY_EXTRAPOLATION) && USE_SENSOR_ELIMINATION_BY_EXTRAPOLATION == true

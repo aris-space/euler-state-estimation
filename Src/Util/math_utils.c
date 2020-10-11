@@ -523,32 +523,70 @@ void discretize(float frequency, int n, int m, float A[n][n], float B[n][m], flo
     scalarmatprod(n, m, 1.0f / frequency, B, Bd);
 }
 
-void body_to_world_rotation(float roll_angle, float pitch_angle, float yaw_angle, float vector[3], float rotated_vector[3]) {
+void body_to_world_rotation_matrix(float attitude_world[3], float rotation_matrix[3][3]) {
     /* inputs: roll angle phi, pitch angle theta, yaw angle psi in radians, vector in body coordinate system */
     /* we are using the aerospace convention of roll-pitch-yaw angles of Tait-Bryan angles (z-y'-x'') */
     /* DIN 9300 https://de.wikipedia.org/wiki/Eulersche_Winkel#Roll-,_Nick-_und_Gierwinkel:_z-y′-x″-Konvention */
-    float phi = roll_angle;
-    float theta = pitch_angle;
-    float psi = yaw_angle;
+    float phi = attitude_world[0];
+    float theta = attitude_world[1];
+    float psi = attitude_world[2];
 
     float R[3][3] = {{cosf(theta)*cosf(psi), sinf(phi)*sinf(theta)*cosf(psi)-cosf(phi)*sinf(psi), cosf(phi)*sinf(theta)*cosf(psi)+sinf(phi)*sinf(psi)},
                      {cosf(theta)*sinf(psi), sinf(phi)*sinf(theta)*sinf(psi)+cosf(phi)*cosf(psi), cosf(phi)*sinf(theta)*sinf(psi)-sinf(phi)*cosf(psi)},
                      {-sinf(theta), sinf(phi)*cosf(theta), cosf(phi)*cosf(theta)}};
 
-    matvecprod(3, 3, R, vector, rotated_vector, true);
+    memcpy(rotation_matrix, R, sizeof(R));
 }
 
-void world_to_body_rotation(float roll_angle, float pitch_angle, float yaw_angle, float vector[3], float rotated_vector[3]) {
-    /* inputs: roll angle phi, pitch angle theta, yaw angle psi in radians, vector in body coordinate system */
+void world_to_body_rotation_matrix(float attitude_world[3], float rotation_matrix[3][3]) {
+    /* inputs: roll angle phi, pitch angle theta, yaw angle psi in radians, vector in world coordinate system */
     /* we are using the aerospace convention of roll-pitch-yaw angles of Tait-Bryan angles (z-y'-x'') */
     /* DIN 9300 https://de.wikipedia.org/wiki/Eulersche_Winkel#Roll-,_Nick-_und_Gierwinkel:_z-y′-x″-Konvention */
-    float phi = roll_angle;
-    float theta = pitch_angle;
-    float psi = yaw_angle;
+    float phi = attitude_world[0];
+    float theta = attitude_world[1];
+    float psi = attitude_world[2];
 
     float R[3][3] = {{cosf(theta)*cosf(psi), cosf(theta)*sinf(psi), -sinf(theta)},
                      {sinf(phi)*sinf(theta)*cosf(psi)-cosf(phi)*sinf(psi), sinf(phi)*sinf(theta)*sinf(psi)+cosf(phi)*cosf(psi), sinf(phi)*cosf(theta)},
                      {cosf(phi)*sinf(theta)*cosf(psi)+sinf(phi)*sinf(psi), cosf(phi)*sinf(theta)*sinf(psi)-sinf(phi)*cosf(psi), cosf(phi)*cosf(theta)}};
 
-    matvecprod(3, 3, R, vector, rotated_vector, true);
+    memcpy(rotation_matrix, R, sizeof(R));
+}
+
+void vec_body_to_world_rotation(float attitude_body[3], float vec_body[3], float vec_world[3]) {
+    float R[3][3] = {0};
+    body_to_world_rotation_matrix(attitude_body, R);
+    
+    matvecprod(3, 3, R, vec_body, vec_world, true);
+}
+
+void vec_world_to_body_rotation(float attitude_world[3], float vec_world[3], float rotated_vector[3]) {
+    float R[3][3] = {0};
+    world_to_body_rotation_matrix(attitude_world, R);
+    
+    matvecprod(3, 3, R, vec_world, rotated_vector, true);
+}
+
+void cov_body_to_world_rotation(float attitude_world[3], float cov_world[3][3], float cov_body[3][3]) {
+    float R[3][3] = {0};
+    world_to_body_rotation_matrix(attitude_world, R);
+
+    float R_T[3][3] = {0};
+    transpose(3, 3, R, R_T);
+
+    float R_mult_cov[3][3] = {0};
+    matmul(3, 3, 3, R, cov_world, R_mult_cov, true);
+    matmul(3, 3, 3, R_mult_cov, R_T, cov_body, true);
+}
+
+void cov_world_to_body_rotation(float attitude_world[3], float cov_world[3][3], float cov_body[3][3]) {
+    float R[3][3] = {0};
+    world_to_body_rotation_matrix(attitude_world, R);
+
+    float R_T[3][3] = {0};
+    transpose(3, 3, R, R_T);
+
+    float R_mult_cov[3][3] = {0};
+    matmul(3, 3, 3, R, cov_world, R_mult_cov, true);
+    matmul(3, 3, 3, R_mult_cov, R_T, cov_body, true);
 }

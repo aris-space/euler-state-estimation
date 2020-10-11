@@ -82,8 +82,16 @@ int polyfit(const float* const dependentValues, const float* const independentVa
 
 void discretize(float frequency, int n, int m, float A[n][n], float B[n][m], float Ad[n][n], float Bd[n][m]);
 
-void body_to_world_rotation(float roll_angle, float pitch_angle, float yaw_angle, float vector[3], float rotated_vector[3]);
+void body_to_world_rotation_matrix(float attitude_world[3], float rotation_matrix[3][3]);
 
-void world_to_body_rotation(float roll_angle, float pitch_angle, float yaw_angle, float vector[3], float rotated_vector[3]);
+void world_to_body_rotation_matrix(float attitude_world[3], float rotation_matrix[3][3]);
+
+void vec_body_to_world_rotation(float attitude_body[3], float vec_body[3], float vec_world[3]);
+
+void vec_world_to_body_rotation(float attitude_world[3], float vec_world[3], float rotated_vector[3]);
+
+void cov_body_to_world_rotation(float attitude_world[3], float cov_world[3][3], float cov_body[3][3]);
+
+void cov_world_to_body_rotation(float attitude_world[3], float cov_world[3][3], float cov_body[3][3]);
 
 #endif

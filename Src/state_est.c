@@ -92,13 +92,13 @@ void update_state_est_data(state_est_state_t *state_est_state) {
         float angular_velocity_world[3] = {state_est_state->kf_state.u[3], state_est_state->kf_state.u[4], state_est_state->kf_state.u[5]};
 
         float velocity_rocket[3] = {0};
-        world_to_body_rotation(attitude_world[0], attitude_world[1], attitude_world[2], velocity_world, velocity_rocket);
+        vec_world_to_body_rotation(attitude_world, velocity_world, velocity_rocket);
 
         float angular_velocity_rocket[3] = {0};
-        world_to_body_rotation(attitude_world[0], attitude_world[1], attitude_world[2], angular_velocity_world, angular_velocity_rocket);
+        vec_world_to_body_rotation(attitude_world, angular_velocity_world, angular_velocity_rocket);
 
         float acceleration_rocket[3] = {0};
-        world_to_body_rotation(attitude_world[0], attitude_world[1], attitude_world[2], acceleration_world, acceleration_rocket);
+        vec_world_to_body_rotation(attitude_world, acceleration_world, acceleration_rocket);
 
         for (int i = 0; i < 3; i++) {
             state_est_state->state_est_data.position_world[i] = (int32_t)(state_est_state->kf_state.x_est[i] * 1000);
@@ -284,10 +284,9 @@ void process_measurements(timestamp_t t, state_est_state_t *state_est_state) {
         float acc_rocket[3] = {u_rocket[0], u_rocket[1], u_rocket[2]};
         float gyro_rocket[3] = {u_rocket[3], u_rocket[4], u_rocket[5]};
         float acc_world[3], gyro_world[3];
-        body_to_world_rotation(state_est_state->kf_state.x_est[6], state_est_state->kf_state.x_est[7], state_est_state->kf_state.x_est[8],
-                               acc_rocket, acc_world);
-        body_to_world_rotation(state_est_state->kf_state.x_est[6], state_est_state->kf_state.x_est[7], state_est_state->kf_state.x_est[8],
-                               gyro_rocket, gyro_world);
+        float attitude_world[3] = {state_est_state->kf_state.x_est[6], state_est_state->kf_state.x_est[7], state_est_state->kf_state.x_est[8]};
+        vec_body_to_world_rotation(attitude_world, acc_rocket, acc_world);
+        vec_body_to_world_rotation(attitude_world, gyro_rocket, gyro_world);
 
         acc_world[2] -= GRAVITATION;
         
@@ -333,10 +332,8 @@ void process_measurements(timestamp_t t, state_est_state_t *state_est_state) {
 } 
 
 void select_noise_models(state_est_state_t *state_est_state) {
-    float acc_x_stdev = 0;
-    float acc_yz_stdev = 0;
-    float gyro_x_stdev = 0.00872665; // TODO: insert noise-modelled values
-    float gyro_yz_stdev = 0.00872665; // TODO: insert noise-modelled values
+    float acc_stdev_rocket[3] = {0};
+    float gyro_stdev_rocket[3] = {0.00872665, 0.00872665, 0.00872665}; // TODO: insert noise-modelled values
     float baro_stdev = 0;
 
     // TODO @maxi: add different noise models for each mach regime
@@ -344,45 +341,63 @@ void select_noise_models(state_est_state_t *state_est_state) {
         case AIRBRAKE_TEST:
         case TOUCHDOWN:
         case IDLE:
-            acc_x_stdev = 0.0185409;
-            acc_yz_stdev = 0.0185409;
+            acc_stdev_rocket[0] = 0.0185409;
+            acc_stdev_rocket[1] = 0.0185409;
+            acc_stdev_rocket[2] = 0.0185409;
             baro_stdev = 1.869;
         break;
         case THRUSTING:
-            acc_x_stdev = 1.250775;
-            acc_yz_stdev = 1.250775;
+            acc_stdev_rocket[0] = 1.250775;
+            acc_stdev_rocket[1] = 1.250775;
+            acc_stdev_rocket[2] = 1.250775;
             baro_stdev = 13.000;
         break;
         case BIAS_RESET:
         case APOGEE_APPROACH:
         case CONTROL:
         case COASTING:
-            acc_x_stdev = 0.61803;
-            acc_yz_stdev = 0.61803;
+            acc_stdev_rocket[0] = 0.61803;
+            acc_stdev_rocket[1] = 0.61803;
+            acc_stdev_rocket[2] = 0.61803;
             baro_stdev = 7.380;
         break;
         case DROGUE_DESCENT:
         case MAIN_DESCENT:
-            acc_x_stdev = 1.955133;
-            acc_yz_stdev = 1.955133;
+            acc_stdev_rocket[0] = 1.955133;
+            acc_stdev_rocket[1] = 1.955133;
+            acc_stdev_rocket[2] = 1.955133;
             baro_stdev = 3.896;
         break;
         case BALLISTIC_DESCENT:
-            acc_x_stdev = 0.61803;
-            acc_yz_stdev = 0.61803;
+            acc_stdev_rocket[0] = 0.61803;
+            acc_stdev_rocket[1] = 0.61803;
+            acc_stdev_rocket[2] = 0.61803;
             baro_stdev = 7.380;
         break;
     }
 
     /* update process noise matrix */
-    state_est_state->kf_state.Q[0][0] = powf(acc_x_stdev, 2);
+    #if STATE_ESTIMATION_TYPE == 1
+        state_est_state->kf_state.Q[0][0] = powf(acc_x_stdev, 2);
+    #elif STATE_ESTIMATION_TYPE == 2
+        float Q_upper_rocket[3][3] = {0};
+        float Q_lower_rocket[3][3] = {0};
 
-    #if STATE_ESTIMATION_TYPE == 2
-        state_est_state->kf_state.Q[1][1] = powf(acc_yz_stdev, 2);
-        state_est_state->kf_state.Q[2][2] = powf(acc_yz_stdev, 2);
-        state_est_state->kf_state.Q[3][3] = powf(gyro_x_stdev, 2);
-        state_est_state->kf_state.Q[4][4] = powf(gyro_yz_stdev, 2);
-        state_est_state->kf_state.Q[5][5] = powf(gyro_yz_stdev, 2);
+        for (int i = 0; i < 3; i++) {
+            Q_upper_rocket[i][i] = powf(acc_stdev_rocket[i], 2);
+            Q_lower_rocket[i][i] = powf(gyro_stdev_rocket[i], 2);
+        }
+
+        float Q_upper_world[3][3] = {0};
+        float Q_lower_world[3][3] = {0};
+        float attitude_world[3] = {state_est_state->kf_state.x_est[6], state_est_state->kf_state.x_est[7], state_est_state->kf_state.x_est[8]};
+        cov_body_to_world_rotation(attitude_world, Q_upper_rocket, Q_upper_world);
+        cov_body_to_world_rotation(attitude_world, Q_lower_rocket, Q_lower_world);
+
+        for (int i = 0; i < 3; i++) {
+            state_est_state->kf_state.Q[i][i] = Q_upper_world[i][i];
+            state_est_state->kf_state.Q[3+i][3+i] = Q_lower_world[i][i];
+        }
     #endif
 
     float altitude = 0;

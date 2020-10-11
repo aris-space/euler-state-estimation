@@ -59,6 +59,9 @@ void reset_kf_state(kf_state_t *kf_state){
             discretize(STATE_ESTIMATION_FREQUENCY, NUMBER_STATES, NUMBER_INPUTS, A, B, kf_state->Ad, kf_state->Bd);
             discretize(STATE_ESTIMATION_FREQUENCY, NUMBER_STATES, NUMBER_INPUTS, A, G, kf_state->Ad, kf_state->Gd);
         }
+
+        float x_est_init[NUMBER_STATES] = {0};
+	    float P_est_init[NUMBER_STATES][NUMBER_STATES] = {{1.0E-9, 0, 0}, {0, 1.0E-12, 0}, {0, 0, 0}};
     #elif STATE_ESTIMATION_TYPE == 2
         float A[NUMBER_STATES][NUMBER_STATES] = {0};
         float B[NUMBER_STATES][NUMBER_INPUTS] = {0};
@@ -73,10 +76,19 @@ void reset_kf_state(kf_state_t *kf_state){
 
         discretize(STATE_ESTIMATION_FREQUENCY, NUMBER_STATES, NUMBER_INPUTS, A, B, kf_state->Ad, kf_state->Bd);
         memcpy(&kf_state->Gd, &kf_state->Bd, sizeof(kf_state->Bd));
-    #endif
 
-	float x_est_init[NUMBER_STATES] = {0};
-	float P_est_init[NUMBER_STATES][NUMBER_STATES] = {{1.0E-9, 0, 0}, {0, 1.0E-12, 0}, {0, 0, 0}};
+        float x_est_init[NUMBER_STATES] = {0};
+        /* we are setting the initial pitch angle to the launch rail angle */
+        x_est_init[7] = LAUNCH_RAIL_ANGLE / 180 * M_PI;
+
+	    float P_est_init[NUMBER_STATES][NUMBER_STATES] = {0};
+
+        for (int i = 0; i < 3; i++) {
+            P_est_init[i][i] = 1.0E-9;
+            P_est_init[2+i][2+i] = 1.0E-12;
+            P_est_init[5+i][5+i] = 1.0E-3;
+        }
+    #endif
 
     memcpy(kf_state->x_est, x_est_init, sizeof(x_est_init));
     memcpy(kf_state->P_est, P_est_init, sizeof(P_est_init));

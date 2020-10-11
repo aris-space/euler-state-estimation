@@ -11,6 +11,8 @@
 #define NUM_IMU 6
 #define NUM_BARO 3
 
+#define LAUNCH_RAIL_ANGLE 87.0f // launch rail angle in degrees
+
 /* flight phase detection config */
 #define FPD_SAFETY_COUNTER_THRESH 4 // how many (non-consecutive) measurements are required to detect an event and switch the flight phase
 #define FPD_LIFTOFF_ACC_THRESH 20 // acceleration threshold to detect lift-off and enter thrusting flight phase [m/s^2]

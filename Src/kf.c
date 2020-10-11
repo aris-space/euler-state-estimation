@@ -96,8 +96,12 @@ void select_kf_observation_matrices(kf_state_t *kf_state){
 
     for(int i = 0; i < NUMBER_MEASUREMENTS; i++){
         if (kf_state->z_active[i]) {
-             /* activate contribution of measurement in measurement matrix */
-            kf_state->H[i][0] = 1;
+            /* activate contribution of measurement in measurement matrix */
+            #if STATE_ESTIMATION_TYPE == 1
+                kf_state->H[i][0] = 1;
+            #elif STATE_ESTIMATION_TYPE == 2
+                kf_state->H[i][2] = 1;
+            #endif
         } else {
             /* set contributed measurement covariance to zero */
             kf_state->R[i][i] = 0;

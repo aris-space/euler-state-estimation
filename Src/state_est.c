@@ -18,7 +18,7 @@ void reset_state_est_state(float p_g, float T_g, state_est_state_t *state_est_st
         memset(&state_est_state->baro_roll_mem, 0, sizeof(state_est_state->baro_roll_mem));
     #endif
 
-    #if USE_STATE_EST_DESCENT == false
+    #if STATE_ESTIMATION_TYPE == 1 && USE_STATE_EST_DESCENT == false
         memset(&state_est_state->altitude_mav_mem, 0, sizeof(state_est_state->altitude_mav_mem));
     #endif
 

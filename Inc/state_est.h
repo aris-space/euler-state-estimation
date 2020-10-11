@@ -39,7 +39,7 @@ typedef struct state_est_state_t {
     extrapolation_rolling_memory_t baro_roll_mem;
     #endif
 
-    #if USE_STATE_EST_DESCENT == false
+    #if STATE_ESTIMATION_TYPE == 1 && USE_STATE_EST_DESCENT == false
     mav_memory_t altitude_mav_mem;
     #endif
 } state_est_state_t;

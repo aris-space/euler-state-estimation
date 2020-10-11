@@ -68,10 +68,10 @@ void reset_kf_state(kf_state_t *kf_state){
         float G[NUMBER_STATES][NUMBER_INPUTS] = {0};
 
         for(int i = 0; i < 3; i++) {
-            A[i][2+i] = 1;
+            A[i][3+i] = 1;
         }
         for(int i = 0; i < 6; i++) {
-            B[2+i][i] = 1;
+            B[3+i][i] = 1;
         }
 
         discretize(STATE_ESTIMATION_FREQUENCY, NUMBER_STATES, NUMBER_INPUTS, A, B, kf_state->Ad, kf_state->Bd);
@@ -85,8 +85,8 @@ void reset_kf_state(kf_state_t *kf_state){
 
         for (int i = 0; i < 3; i++) {
             P_est_init[i][i] = 1.0E-9;
-            P_est_init[2+i][2+i] = 1.0E-12;
-            P_est_init[5+i][5+i] = 1.0E-3;
+            P_est_init[3+i][3+i] = 1.0E-12;
+            P_est_init[6+i][6+i] = 1.0E-3;
         }
     #endif
 

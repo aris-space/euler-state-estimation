@@ -9,12 +9,12 @@
 #define GRAVITATION 9.81
 #define GAMMA 1.4
 #define R_star 8.3144598
-#define M 0.028964
+#define M 0.0289644
 #define R_0 R_star / M
-#define T_0 273.15
+#define T_0 273.15f
 #define T_GRAD 0.0065
-#define TEMPERATURE_REFERENCE 15 // ISA reference temperature at sea level [K]
-#define PRESSURE_REFERENCE 101325 // ISA reference pressure at sea level [Pa]
+#define TEMPERATURE_REFERENCE 15.0f // ISA reference temperature at sea level [K]
+#define PRESSURE_REFERENCE 101325.0f // ISA reference pressure at sea level [Pa]
 #define RHO_REFERENCE 1.225 // ISA reference air density at sealevel
 
 typedef struct env_t {

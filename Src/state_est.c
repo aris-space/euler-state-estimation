@@ -238,34 +238,34 @@ void process_measurements(timestamp_t t, state_est_state_t *state_est_state) {
     }
 
     /* take the average of the active accelerometers as the state estimation input */
-    float u[NUMBER_INPUTS] = {0};
+    float u_rocket[NUMBER_INPUTS] = {0};
     float num_u_active[NUMBER_INPUTS] = {0};
     for (int i = 0; i < NUM_IMU; i++){
         if (acc_x_meas_active[i]) {
-            u[0] += acc_x_meas[i];
+            u_rocket[0] += acc_x_meas[i];
             num_u_active[0] += 1;
         }
 
         #if STATE_ESTIMATION_TYPE == 2
             if (acc_y_meas_active[i]) {
-                u[1] += acc_y_meas[i];
+                u_rocket[1] += acc_y_meas[i];
                 num_u_active[1] += 1;
             }
             if (acc_z_meas_active[i]) {
-                u[2] += acc_z_meas[i];
+                u_rocket[2] += acc_z_meas[i];
                 num_u_active[2] += 1;
             }
 
             if (gyro_x_meas_active[i]) {
-                u[3] += gyro_x_meas[i];
+                u_rocket[3] += gyro_x_meas[i];
                 num_u_active[3] += 1;
             }
             if (gyro_y_meas_active[i]) {
-                u[4] += gyro_y_meas[i];
+                u_rocket[4] += gyro_y_meas[i];
                 num_u_active[4] += 1;
             }
             if (gyro_z_meas_active[i]) {
-                u[5] += gyro_z_meas[i];
+                u_rocket[5] += gyro_z_meas[i];
                 num_u_active[5] += 1;
             }
         #endif
@@ -273,16 +273,29 @@ void process_measurements(timestamp_t t, state_est_state_t *state_est_state) {
     for (int i = 0; i < NUMBER_INPUTS; i++){
         /* we take the old acceleration from the previous timestep, if no acceleration measurements are active */
         if (num_u_active[i] > 0){
-            u[i] /= num_u_active[i];
+            u_rocket[i] /= num_u_active[i];
         }
-
-        if (i == 0){
-            /* gravity compensation for accelerometer */
-            u[i] -= GRAVITATION;
-        }
-
-        state_est_state->kf_state.u[i] = u[i];
     }
+
+    #if STATE_ESTIMATION_TYPE == 1
+        kf_state.u[0] = u_rocket[0] - GRAVITATION;
+
+    #elif STATE_ESTIMATION_TYPE == 2
+        float acc_rocket[3] = {u_rocket[0], u_rocket[1], u_rocket[2]};
+        float gyro_rocket[3] = {u_rocket[3], u_rocket[4], u_rocket[5]};
+        float acc_world[3], gyro_world[3];
+        body_to_world_rotation(state_est_state->kf_state.x_est[6], state_est_state->kf_state.x_est[7], state_est_state->kf_state.x_est[8],
+                               acc_rocket, acc_world);
+        body_to_world_rotation(state_est_state->kf_state.x_est[6], state_est_state->kf_state.x_est[7], state_est_state->kf_state.x_est[8],
+                               gyro_rocket, gyro_world);
+
+        acc_world[2] -= GRAVITATION;
+        
+        for (int i = 0; i < 3; i++) {
+            state_est_state->kf_state.u[i] = acc_world[i];
+            state_est_state->kf_state.u[3+i] = gyro_world[i];
+        }
+    #endif
 
     pressure2altitudeAGL(&state_est_state->env, NUMBER_MEASUREMENTS, state_est_state->kf_state.z, state_est_state->kf_state.z_active, state_est_state->kf_state.z);
 

@@ -79,7 +79,7 @@ void reset_kf_state(kf_state_t *kf_state){
 
         float x_est_init[NUMBER_STATES] = {0};
         /* we are setting the initial pitch angle to the launch rail angle */
-        x_est_init[7] = LAUNCH_RAIL_ANGLE / 180 * M_PI;
+        x_est_init[7] = -LAUNCH_RAIL_ANGLE / 180 * M_PI;
 
 	    float P_est_init[NUMBER_STATES][NUMBER_STATES] = {0};
 

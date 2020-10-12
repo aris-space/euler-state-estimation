@@ -173,16 +173,38 @@ void process_measurements(timestamp_t t, state_est_state_t *state_est_state) {
         
         for (int i = 0; i < NUM_IMU; i++){
             if (state_est_state->state_est_meas.imu_data[i].ts > state_est_state->state_est_meas_prior.imu_data[i].ts) {
-                acc_x_meas[i] = state_est_state->state_est_meas.imu_data[i].acc_x;
-                acc_y_meas[i] = state_est_state->state_est_meas.imu_data[i].acc_y;
-                acc_z_meas[i] = state_est_state->state_est_meas.imu_data[i].acc_z;
+                /* acceleration of moving body: S = sensor coordinate system, C = rocket body coordinate system at CoG */
+                /* S_a_C = C_SC * (C_a_C + C_omega_C x C_r_CS)
+                   C_a_C = C_CS * S_a_S - C_omega_C x C_r_CS */
+
+                // acceleration of sensor in sensor coordinate system
+                float S_a_S[3] = {state_est_state->state_est_meas.imu_data[i].acc_x, 
+                                  state_est_state->state_est_meas.imu_data[i].acc_y, 
+                                  state_est_state->state_est_meas.imu_data[i].acc_z};
+                float S_omega_S[3] = {state_est_state->state_est_meas.imu_data[i].gyro_x, 
+                                      state_est_state->state_est_meas.imu_data[i].gyro_y, 
+                                      state_est_state->state_est_meas.imu_data[i].gyro_z};
+                                      
+                float C_omega_C[3] = {0};
+                matvecprod(3, 3, state_est_state->state_est_meas.imu_data->R_CS, S_omega_S, C_omega_C, true);
+
+                float C_CS_mult_S_a_S[3] = {0};
+                matvecprod(3, 3, state_est_state->state_est_meas.imu_data->R_CS, S_a_S, C_CS_mult_S_a_S, true);
+                float C_omega_C_cross_C_r_CS[3] = {0};
+                veccrossprod(C_omega_C, state_est_state->state_est_meas.imu_data->C_r_CS, C_omega_C_cross_C_r_CS);
+                float C_a_C[3] = {0};
+                vecsub(3, C_CS_mult_S_a_S, C_omega_C_cross_C_r_CS, C_a_C);
+
+                acc_x_meas[i] = C_a_C[0];
+                acc_y_meas[i] = C_a_C[1];
+                acc_z_meas[i] = C_a_C[2];
                 acc_x_meas_active[i] = true;
                 acc_y_meas_active[i] = true;
                 acc_z_meas_active[i] = true;
 
-                gyro_x_meas[i] = state_est_state->state_est_meas.imu_data[i].gyro_x;
-                gyro_y_meas[i] = state_est_state->state_est_meas.imu_data[i].gyro_y;
-                gyro_z_meas[i] = state_est_state->state_est_meas.imu_data[i].gyro_z;
+                gyro_x_meas[i] = C_omega_C[0];
+                gyro_y_meas[i] = C_omega_C[1];
+                gyro_z_meas[i] = C_omega_C[2];
                 gyro_x_meas_active[i] = true;
                 gyro_y_meas_active[i] = true;
                 gyro_z_meas_active[i] = true;
@@ -573,6 +595,16 @@ void init_sensor_transormation_matrix(state_est_state_t *state_est_state) {
             }
             T_CS[j][3] = C_r_CS[j];
         }
+
+        memcpy(&state_est_state->state_est_meas.imu_data[2*i].C_r_CS, &C_r_CS, sizeof(C_r_CS));
+        memcpy(&state_est_state->state_est_meas.imu_data[2*i+1].C_r_CS, &C_r_CS, sizeof(C_r_CS));
+        memcpy(&state_est_state->state_est_meas_prior.imu_data[2*i].C_r_CS, &C_r_CS, sizeof(C_r_CS));
+        memcpy(&state_est_state->state_est_meas_prior.imu_data[2*i+1].C_r_CS, &C_r_CS, sizeof(C_r_CS));
+
+        memcpy(&state_est_state->state_est_meas.imu_data[2*i].R_CS, &R_CS, sizeof(R_CS));
+        memcpy(&state_est_state->state_est_meas.imu_data[2*i+1].R_CS, &R_CS, sizeof(R_CS));
+        memcpy(&state_est_state->state_est_meas_prior.imu_data[2*i].R_CS, &R_CS, sizeof(R_CS));
+        memcpy(&state_est_state->state_est_meas_prior.imu_data[2*i+1].R_CS, &R_CS, sizeof(R_CS));
 
         memcpy(&state_est_state->state_est_meas.imu_data[2*i].T_CS, &T_CS, sizeof(T_CS));
         memcpy(&state_est_state->state_est_meas.imu_data[2*i+1].T_CS, &T_CS, sizeof(T_CS));

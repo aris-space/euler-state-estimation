@@ -96,6 +96,12 @@ float vecsum(int n, float a[n]) {
 	return sum;
 }
 
+void veccrossprod(float a[3], float b[3], float c[3]) {
+    c[0] = a[1] * b[2] - a[2] * b[1];
+    c[1] = a[2] * b[0] - a[0] * b[2];
+    c[2] = a[0] * b[1] - a[1] * b[0];
+}
+
 /* Function to get cofactor of A[p][q] in temp[][]. n is current dimension of A[][] */
 /* https://www.geeksforgeeks.org/adjoint-inverse-matrix/ */
 void cofactor(int dim, float A[dim][dim], float temp[dim][dim], int p, int q, int n) 

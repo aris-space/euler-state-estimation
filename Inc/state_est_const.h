@@ -45,6 +45,8 @@ typedef struct {
 
 	#if STATE_ESTIMATION_TYPE == 2
 	/* transformation matrix from the rocket coordinate system at the CoG to the sensor coordinate system */
+	float C_r_CS[3];
+	float R_CS[3][3];
 	float T_CS[4][4]; 
 	#endif
 } imu_state_est_t;

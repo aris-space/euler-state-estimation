@@ -42,6 +42,9 @@ void scalarmatprod(int m, int n, float scalar, float A[m][n], float B[m][n]);
 /* Calculates sum of all element in the vector */
 float vecsum(int n, float a[n]);
 
+/* Calculates the cross product of two vectors */
+void veccrossprod(float a[3], float b[3], float c[3]);
+
 /* Function to get cofactor of A[p][q] in temp[][]. n is current dimension of A[][] */
 void cofactor(int dim, float A[dim][dim], float temp[dim][dim], int p, int q, int n);
 

@@ -582,7 +582,7 @@ void init_sensor_transformation_matrix(state_est_state_t *state_est_state) {
         float C_r_CS[3] = {X_COG - X_IMU, cos(planar_angle) * R_IMU, sin(planar_angle) * R_IMU};
 
         /* rotation matrix from the rocket coordinate system to the sensor coordinate system */
-        float R_CS[3][3] = {{0, 0, 1}, {-cos(planar_angle), sin(planar_angle), 0}, {-sin(planar_angle), -cos(planar_angle), 0}};
+        float R_CS[3][3] = {{0, 0, -1}, {-cos(planar_angle), sin(planar_angle), 0}, {sin(planar_angle), +cos(planar_angle), 0}};
 
         /* TODO: add proper rotation matrix */
 

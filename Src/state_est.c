@@ -7,6 +7,10 @@ void reset_state_est_state(float p_g, float T_g, state_est_state_t *state_est_st
     memset(&state_est_state->state_est_meas, 0, sizeof(state_est_state->state_est_meas));
     memset(&state_est_state->state_est_meas_prior, 0, sizeof(state_est_state->state_est_meas_prior));
 
+    #if STATE_ESTIMATION_TYPE == 2
+        init_sensor_transormation_matrix(state_est_state);
+    #endif
+
     init_env(&state_est_state->env);
     calibrate_env(&state_est_state->env, p_g, T_g);
     update_env(&state_est_state->env, T_g);
@@ -543,3 +547,39 @@ float update_mav(mav_memory_t *mav_memory, timestamp_t t, float measurement, boo
 
     return mav_memory->avg_values[0];
 }
+
+#if STATE_ESTIMATION_TYPE == 2
+void init_sensor_transormation_matrix(state_est_state_t *state_est_state) {
+    /* we assume two IMUs per sensorboard */
+    for (int i = 0; i < (NUM_IMU / 2); i++) {
+        /* planar yaw offset of the sensorboard */
+        float planar_angle = 2 * M_PI * i / (NUM_IMU / 2);
+
+        // vector from the CoG of the rocket to the sensor in the rocket coordinate system
+        // we are assuming now that both IMUs on the sensorboards are in the same location without any tangent offset
+        float C_r_CS[3] = {X_COG - X_IMU, cos(planar_angle) * R_IMU, sin(planar_angle) * R_IMU};
+
+        /* rotation matrix from the rocket coordinate system to the sensor coordinate system */
+        float R_CS[3][3] = {0};
+        eye(3, R_CS);
+
+        /* TODO: add proper rotation matrix */
+
+        float T_CS[4][4] = {0};
+        T_CS[3][3] = 1;
+        for (int j = 0; j < 3; j++) {
+            for (int k = 0; k < 3; k++) {
+                T_CS[j][k] = R_CS[j][k];
+            }
+            T_CS[j][3] = C_r_CS[j];
+        }
+
+        memcpy(&state_est_state->state_est_meas.imu_data[2*i].T_CS, &T_CS, sizeof(T_CS));
+        memcpy(&state_est_state->state_est_meas.imu_data[2*i+1].T_CS, &T_CS, sizeof(T_CS));
+        memcpy(&state_est_state->state_est_meas_prior.imu_data[2*i].T_CS, &T_CS, sizeof(T_CS));
+        memcpy(&state_est_state->state_est_meas_prior.imu_data[2*i+1].T_CS, &T_CS, sizeof(T_CS));
+
+        float test = 0;
+    }
+}
+#endif

@@ -42,6 +42,11 @@ typedef struct {
 	float gyro_x, gyro_y, gyro_z;
 	float acc_x, acc_y, acc_z;
 	timestamp_t ts;
+
+	#if STATE_ESTIMATION_TYPE == 2
+	/* transformation matrix from the rocket coordinate system at the CoG to the sensor coordinate system */
+	float T_CS[4][4]; 
+	#endif
 } imu_state_est_t;
 
 /* State Estimation combined Data struct */

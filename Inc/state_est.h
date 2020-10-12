@@ -60,7 +60,7 @@ void sensor_elimination_by_extrapolation(timestamp_t t, int n, float measurement
 float update_mav(mav_memory_t *mav_memory, timestamp_t t, float measurement, bool measurement_active);
 
 #if STATE_ESTIMATION_TYPE == 2
-void init_sensor_transormation_matrix(state_est_state_t *state_est_state);
+void init_sensor_transformation_matrix(state_est_state_t *state_est_state);
 #endif
 
 #endif

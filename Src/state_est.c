@@ -8,7 +8,7 @@ void reset_state_est_state(float p_g, float T_g, state_est_state_t *state_est_st
     memset(&state_est_state->state_est_meas_prior, 0, sizeof(state_est_state->state_est_meas_prior));
 
     #if STATE_ESTIMATION_TYPE == 2
-        init_sensor_transormation_matrix(state_est_state);
+        init_sensor_transformation_matrix(state_est_state);
     #endif
 
     init_env(&state_est_state->env);
@@ -571,7 +571,7 @@ float update_mav(mav_memory_t *mav_memory, timestamp_t t, float measurement, boo
 }
 
 #if STATE_ESTIMATION_TYPE == 2
-void init_sensor_transormation_matrix(state_est_state_t *state_est_state) {
+void init_sensor_transformation_matrix(state_est_state_t *state_est_state) {
     /* we assume two IMUs per sensorboard */
     for (int i = 0; i < (NUM_IMU / 2); i++) {
         /* planar yaw offset of the sensorboard */
@@ -609,8 +609,6 @@ void init_sensor_transormation_matrix(state_est_state_t *state_est_state) {
         memcpy(&state_est_state->state_est_meas.imu_data[2*i+1].T_CS, &T_CS, sizeof(T_CS));
         memcpy(&state_est_state->state_est_meas_prior.imu_data[2*i].T_CS, &T_CS, sizeof(T_CS));
         memcpy(&state_est_state->state_est_meas_prior.imu_data[2*i+1].T_CS, &T_CS, sizeof(T_CS));
-
-        float test = 0;
     }
 }
 #endif

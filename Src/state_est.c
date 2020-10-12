@@ -304,7 +304,7 @@ void process_measurements(timestamp_t t, state_est_state_t *state_est_state) {
     }
 
     #if STATE_ESTIMATION_TYPE == 1
-        kf_state.u[0] = u_rocket[0] - GRAVITATION;
+        state_est_state->kf_state.u[0] = u_rocket[0] - GRAVITATION;
 
     #elif STATE_ESTIMATION_TYPE == 2
         float acc_rocket[3] = {u_rocket[0], u_rocket[1], u_rocket[2]};
@@ -404,7 +404,7 @@ void select_noise_models(state_est_state_t *state_est_state) {
 
     /* update process noise matrix */
     #if STATE_ESTIMATION_TYPE == 1
-        state_est_state->kf_state.Q[0][0] = powf(acc_x_stdev, 2);
+        state_est_state->kf_state.Q[0][0] = powf(acc_stdev_rocket[0], 2);
     #elif STATE_ESTIMATION_TYPE == 2
         float Q_upper_rocket[3][3] = {0};
         float Q_lower_rocket[3][3] = {0};

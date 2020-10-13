@@ -38,7 +38,7 @@ void state_est_step(timestamp_t t, state_est_state_t *state_est_state, bool bool
 	
 	kf_prediction(&state_est_state->kf_state);
 
-	if (state_est_state->kf_state.num_z_active > 0) {
+	if (state_est_state->kf_state.num_z_active > 0 && STATE_ESTIMATION_TYPE == 1) {
 		select_kf_observation_matrices(&state_est_state->kf_state);
 		kf_update(&state_est_state->kf_state);
 	} else {

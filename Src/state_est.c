@@ -242,7 +242,11 @@ void process_measurements(timestamp_t t, state_est_state_t *state_est_state) {
     /* eliminate imu measurements */
     sensor_elimination_by_stdev(NUM_IMU, acc_x_meas, acc_x_meas_active);
     #if STATE_ESTIMATION_TYPE == 2
+        sensor_elimination_by_stdev(NUM_IMU, acc_y_meas, acc_y_meas_active);
+        sensor_elimination_by_stdev(NUM_IMU, acc_z_meas, acc_z_meas_active);
         sensor_elimination_by_stdev(NUM_IMU, gyro_x_meas, gyro_x_meas_active);
+        sensor_elimination_by_stdev(NUM_IMU, gyro_y_meas, gyro_y_meas_active);
+        sensor_elimination_by_stdev(NUM_IMU, gyro_z_meas, gyro_z_meas_active);
     #endif
 
     /* update num_z_active */

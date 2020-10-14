@@ -192,8 +192,10 @@ void process_measurements(timestamp_t t, state_est_state_t *state_est_state) {
                 matvecprod(3, 3, state_est_state->state_est_meas.imu_data->R_CS, S_a_S, C_CS_mult_S_a_S, true);
                 float C_omega_C_cross_C_r_CS[3] = {0};
                 veccrossprod(C_omega_C, state_est_state->state_est_meas.imu_data->C_r_CS, C_omega_C_cross_C_r_CS);
+                float C_omega_C_cross_C_omega_C_cross_C_r_CS[3] = {0};
+                veccrossprod(C_omega_C, C_omega_C_cross_C_r_CS, C_omega_C_cross_C_omega_C_cross_C_r_CS);
                 float C_a_C[3] = {0};
-                vecsub(3, C_CS_mult_S_a_S, C_omega_C_cross_C_r_CS, C_a_C);
+                vecsub(3, C_CS_mult_S_a_S, C_omega_C_cross_C_omega_C_cross_C_r_CS, C_a_C);
 
                 acc_x_meas[i] = C_a_C[0];
                 acc_y_meas[i] = C_a_C[1];

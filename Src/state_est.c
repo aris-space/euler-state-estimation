@@ -371,38 +371,58 @@ void select_noise_models(state_est_state_t *state_est_state) {
         case AIRBRAKE_TEST:
         case TOUCHDOWN:
         case IDLE:
-            acc_stdev_rocket[0] = 0.0185409;
-            acc_stdev_rocket[1] = 0.0185409;
-            acc_stdev_rocket[2] = 0.0185409;
+            acc_stdev_rocket[0] = 0.080442;
+            acc_stdev_rocket[1] = 0.080442;
+            acc_stdev_rocket[2] = 0.080442;
             baro_stdev = 1.869;
         break;
         case THRUSTING:
-            acc_stdev_rocket[0] = 1.250775;
-            acc_stdev_rocket[1] = 1.250775;
-            acc_stdev_rocket[2] = 1.250775;
+            if (state_est_state->flight_phase_detection.mach_regime == SUPERSONIC) {
+                acc_stdev_rocket[0] = 0.576828;
+                acc_stdev_rocket[1] = 0.847584;
+                acc_stdev_rocket[2] = 0.847584;
+            } else if (state_est_state->flight_phase_detection.mach_regime == TRANSONIC) {
+                acc_stdev_rocket[0] = 1.616688;
+                acc_stdev_rocket[1] = 1.616688;
+                acc_stdev_rocket[2] = 1.616688;
+            } else {
+                acc_stdev_rocket[0] = 1.376343;
+                acc_stdev_rocket[1] = 4.5126;
+                acc_stdev_rocket[2] = 4.5126;
+            }
             baro_stdev = 13.000;
         break;
         case BIAS_RESET:
         case APOGEE_APPROACH:
-        case CONTROL:
+        case BALLISTIC_DESCENT:
         case COASTING:
-            acc_stdev_rocket[0] = 0.61803;
-            acc_stdev_rocket[1] = 0.61803;
-            acc_stdev_rocket[2] = 0.61803;
+            if (state_est_state->flight_phase_detection.mach_regime == SUPERSONIC) {
+                acc_stdev_rocket[0] = 0.115758;
+                acc_stdev_rocket[1] = 0.904482;
+                acc_stdev_rocket[2] = 0.904482;
+            } else if (state_est_state->flight_phase_detection.mach_regime == TRANSONIC) {
+                acc_stdev_rocket[0] = 0.2;
+                acc_stdev_rocket[1] = 0.370818;
+                acc_stdev_rocket[2] = 0.370818;
+            } else {
+                acc_stdev_rocket[0] = 0.1;
+                acc_stdev_rocket[1] = 0.805401;
+                acc_stdev_rocket[2] = 0.805401;
+            }
+            baro_stdev = 7.380;
+        break;
+        case CONTROL:
+            acc_stdev_rocket[0] = 1.250775;
+            acc_stdev_rocket[1] = 1.8;
+            acc_stdev_rocket[2] = 1.8;
             baro_stdev = 7.380;
         break;
         case DROGUE_DESCENT:
         case MAIN_DESCENT:
-            acc_stdev_rocket[0] = 1.955133;
-            acc_stdev_rocket[1] = 1.955133;
-            acc_stdev_rocket[2] = 1.955133;
+            acc_stdev_rocket[0] = 1.85409;
+            acc_stdev_rocket[1] = 1.372419;
+            acc_stdev_rocket[2] = 1.372419;
             baro_stdev = 3.896;
-        break;
-        case BALLISTIC_DESCENT:
-            acc_stdev_rocket[0] = 0.61803;
-            acc_stdev_rocket[1] = 0.61803;
-            acc_stdev_rocket[2] = 0.61803;
-            baro_stdev = 7.380;
         break;
     }
 

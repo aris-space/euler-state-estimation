@@ -11,7 +11,7 @@
 #define NUM_IMU 6
 #define NUM_BARO 3
 
-#define LAUNCH_RAIL_ANGLE 87.0f // launch rail angle in degrees
+#define LAUNCH_RAIL_ANGLE 90.0f // launch rail angle in degrees
 #define X_COG 2.081f // longitudinal distance from tip nose-cone to the CoG of the rocket [m]
 #define X_IMU 2.0476680f // longitudinal distance from the tip of the nose-cone to the IMU sensors [m]
 #define X_BARO 2.0476680f // longitudinal distance from the tip of the nose-cone to the barometric sensors [m]

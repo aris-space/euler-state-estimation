@@ -596,3 +596,12 @@ void cov_world_to_body_rotation(float attitude_world[3], float cov_world[3][3], 
     matmul(3, 3, 3, R, cov_world, R_mult_cov, true);
     matmul(3, 3, 3, R_mult_cov, R_T, cov_body, true);
 }
+
+/* keep angles between -pi and +pi */
+void unwrap_angles(int n, float a[n], float b[n]) {
+    for (int i = 0; i < n; i++) {
+        b[i] = a[i];
+        while (b[i] <= -M_PI) b[i] += 2 * M_PI;
+        while (b[i] > M_PI) b[i] -= 2 * M_PI;
+    }
+}

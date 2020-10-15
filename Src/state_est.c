@@ -38,6 +38,14 @@ void state_est_step(timestamp_t t, state_est_state_t *state_est_state, bool bool
 	
 	kf_prediction(&state_est_state->kf_state);
 
+    #if STATE_ESTIMATION_TYPE == 2
+        float attitude_priori[3] = {state_est_state->kf_state.x_priori[6], state_est_state->kf_state.x_priori[7], state_est_state->kf_state.x_priori[8]};
+        unwrap_angles(3, attitude_priori, attitude_priori);
+        for (int i; i < 3; i++) {
+            state_est_state->kf_state.x_priori[6+i] = attitude_priori[i];
+        }
+    #endif
+
 	if (state_est_state->kf_state.num_z_active > 0) {
 		select_kf_observation_matrices(&state_est_state->kf_state);
 		kf_update(&state_est_state->kf_state);

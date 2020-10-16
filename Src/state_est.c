@@ -425,7 +425,7 @@ void select_noise_models(state_est_state_t *state_est_state) {
             acc_stdev_rocket[0] = 1.250775;
             acc_stdev_rocket[1] = 1.8;
             acc_stdev_rocket[2] = 1.8;
-            baro_stdev = 7.380;
+            baro_stdev = 13;
         break;
         case DROGUE_DESCENT:
         case MAIN_DESCENT:

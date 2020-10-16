@@ -229,28 +229,41 @@ void select_noise_models(state_est_state_t *state_est_state) {
         case AIRBRAKE_TEST:
         case TOUCHDOWN:
         case IDLE:
-            accelerometer_x_stdev = 0.0185409;
+            accelerometer_x_stdev = 0.080442;
             barometer_stdev = 1.869;
         break;
         case THRUSTING:
-            accelerometer_x_stdev = 1.250775;
+            if (state_est_state->flight_phase_detection.mach_regime == SUPERSONIC) {
+                accelerometer_x_stdev = 0.576828;
+            } else if (state_est_state->flight_phase_detection.mach_regime == TRANSONIC) {
+                accelerometer_x_stdev = 1.616688;
+            } else {
+                accelerometer_x_stdev = 1.376343;
+            }
             barometer_stdev = 13.000;
         break;
         case BIAS_RESET:
         case APOGEE_APPROACH:
-        case CONTROL:
+        case BALLISTIC_DESCENT:
         case COASTING:
-            accelerometer_x_stdev = 0.61803;
+            if (state_est_state->flight_phase_detection.mach_regime == SUPERSONIC) {
+                accelerometer_x_stdev = 0.115758;
+            } else if (state_est_state->flight_phase_detection.mach_regime == TRANSONIC) {
+                accelerometer_x_stdev = 0.2;
+            } else {
+                accelerometer_x_stdev = 0.1;
+            }
+            // accelerometer_x_stdev = 1.250775;
             barometer_stdev = 7.380;
+        break;
+        case CONTROL:
+            accelerometer_x_stdev = 1.250775;
+            barometer_stdev = 13;
         break;
         case DROGUE_DESCENT:
         case MAIN_DESCENT:
-            accelerometer_x_stdev = 1.955133;
+            accelerometer_x_stdev = 1.85409;
             barometer_stdev = 3.896;
-        break;
-        case BALLISTIC_DESCENT:
-            accelerometer_x_stdev = 0.61803;
-            barometer_stdev = 7.380;
         break;
     }
 

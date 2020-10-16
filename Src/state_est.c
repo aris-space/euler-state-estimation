@@ -376,7 +376,6 @@ void select_noise_models(state_est_state_t *state_est_state) {
     float gyro_stdev_rocket[3] = {0.00872665, 0.00872665, 0.00872665}; // TODO: insert noise-modelled values
     float baro_stdev = 0;
 
-    // TODO @maxi: add different noise models for each mach regime
     switch (state_est_state->flight_phase_detection.flight_phase) {
         case AIRBRAKE_TEST:
         case TOUCHDOWN:

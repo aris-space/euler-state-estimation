@@ -597,6 +597,30 @@ void cov_world_to_body_rotation(float attitude_world[3], float cov_world[3][3], 
     matmul(3, 3, 3, R_mult_cov, R_T, cov_body, true);
 }
 
+void W_to_Qdot(float Q[4], float W[3], float Qdot[4]) {
+    float H[3][4] = {{-0.5*Q[1], 0.5*Q[0], -0.5*Q[3], 0.5*Q[2]}, 
+                     {-0.5*Q[2], 0.5*Q[3], 0.5*Q[0], -0.5*Q[1]}, 
+                     {-0.5*Q[3], -0.5*Q[2], 0.5*Q[1], 0.5*Q[0]}};
+
+    float H_T[4][3] = {0};
+    transpose(3, 4, H, H_T);
+
+    matvecprod(4, 3, H_T, W, Qdot, true);
+}
+
+void cov_W_to_cov_Qdot(float Q[4], float cov_W[3][3], float cov_Qdot[4][4]) {
+    float H[3][4] = {{-0.5*Q[1], 0.5*Q[0], -0.5*Q[3], 0.5*Q[2]}, 
+                     {-0.5*Q[2], 0.5*Q[3], 0.5*Q[0], -0.5*Q[1]}, 
+                     {-0.5*Q[3], -0.5*Q[2], 0.5*Q[1], 0.5*Q[0]}};
+
+    float H_T[4][3] = {0};
+    transpose(3, 4, H, H_T);
+
+    float H_T_mult_cov_W[4][3] = {0};
+    matmul(4, 3, 3, H_T, cov_W, H_T_mult_cov_W, true);
+    matmul(4, 3, 4, H_T_mult_cov_W, H, cov_Qdot, true);
+}
+
 /* keep angles between -pi and +pi */
 void unwrap_angles(int n, float a[n], float b[n]) {
     for (int i = 0; i < n; i++) {

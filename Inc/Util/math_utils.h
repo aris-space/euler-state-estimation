@@ -97,6 +97,10 @@ void cov_body_to_world_rotation(float attitude_world[3], float cov_world[3][3], 
 
 void cov_world_to_body_rotation(float attitude_world[3], float cov_world[3][3], float cov_body[3][3]);
 
+void W_to_Qdot(float Q[4], float W[3], float Qdot[4]);
+
+void cov_W_to_cov_Qdot(float Q[4], float cov_W[3][3], float cov_Qdot[4][4]);
+
 /* keep angles between -pi and +pi */
 void unwrap_angles(int n, float a[n], float b[n]);
 

@@ -457,7 +457,9 @@ void select_noise_models(state_est_state_t *state_est_state) {
             state_est_state->kf_state.Q[i][i] = Q_upper_world[i][i];
         }
         for (int i = 0; i < 4; i++) {
-            state_est_state->kf_state.Q[3+i][3+i] = Q_lower_quat[i][i];
+            for (int j = 0; j < 4; j++) {
+                state_est_state->kf_state.Q[3+i][3+j] = Q_lower_quat[i][j];
+            }
         }
     #endif
 

@@ -565,7 +565,7 @@ void vec_world_to_body_rotation(float Q[4], float vec_world[3], float rotated_ve
 
 void cov_body_to_world_rotation(float Q[4], float cov_world[3][3], float cov_body[3][3]) {
     float R[3][3] = {0};
-    world_to_body_rotation_matrix(Q, R);
+    body_to_world_rotation_matrix(Q, R);
 
     float R_T[3][3] = {0};
     transpose(3, 3, R, R_T);

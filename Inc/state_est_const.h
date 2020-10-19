@@ -76,8 +76,7 @@ typedef struct {
 
 	#if STATE_ESTIMATION_TYPE == 2
 	int32_t quarternion_world[4];
-	int32_t angular_velocity_world[3];
-	int32_t angular_velocity_rocket[3];
+	int32_t quarternion_dot_world[4];
 	#endif
 } state_est_data_t;
 

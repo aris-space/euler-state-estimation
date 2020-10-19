@@ -93,13 +93,9 @@ void update_state_est_data(state_est_state_t *state_est_state) {
         float velocity_world[3] = {state_est_state->kf_state.x_est[3], state_est_state->kf_state.x_est[4], state_est_state->kf_state.x_est[5]};
         float acceleration_world[3] = {state_est_state->kf_state.u[0], state_est_state->kf_state.u[1], state_est_state->kf_state.u[2]};
         float quarternion_world[4] = {state_est_state->kf_state.x_est[6], state_est_state->kf_state.x_est[7], state_est_state->kf_state.x_est[8], state_est_state->kf_state.x_est[9]};
-        float angular_velocity_world[3] = {state_est_state->kf_state.u[3], state_est_state->kf_state.u[4], state_est_state->kf_state.u[5]};
 
         float velocity_rocket[3] = {0};
         vec_world_to_body_rotation(quarternion_world, velocity_world, velocity_rocket);
-
-        float angular_velocity_rocket[3] = {0};
-        vec_world_to_body_rotation(quarternion_world, angular_velocity_world, angular_velocity_rocket);
 
         float acceleration_rocket[3] = {0};
         vec_world_to_body_rotation(quarternion_world, acceleration_world, acceleration_rocket);
@@ -108,14 +104,13 @@ void update_state_est_data(state_est_state_t *state_est_state) {
             state_est_state->state_est_data.position_world[i] = (int32_t)(state_est_state->kf_state.x_est[i] * 1000);
             state_est_state->state_est_data.velocity_world[i] = (int32_t)(velocity_world[i] * 1000);
             state_est_state->state_est_data.velocity_rocket[i] = (int32_t)(velocity_rocket[i] * 1000);
-            state_est_state->state_est_data.angular_velocity_world[i] = (int32_t)(angular_velocity_world[i] * 1000000);
-            state_est_state->state_est_data.angular_velocity_rocket[i] = (int32_t)(angular_velocity_rocket[i] * 1000000);
             state_est_state->state_est_data.acceleration_world[i] = (int32_t)(acceleration_world[i] * 1000);
             state_est_state->state_est_data.acceleration_rocket[i] = (int32_t)(acceleration_rocket[i] * 1000);
         }
 
         for (int i = 0; i < 4; i++) {
             state_est_state->state_est_data.quarternion_world[i] = (int32_t)(quarternion_world[i] * 1000000);
+            state_est_state->state_est_data.quarternion_dot_world[i] = (int32_t)(state_est_state->kf_state.u[3+i] * 1000000);
         }        
     #endif
 }

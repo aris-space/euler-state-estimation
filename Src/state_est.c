@@ -184,12 +184,12 @@ void process_measurements(timestamp_t t, state_est_state_t *state_est_state) {
                                       state_est_state->state_est_meas.imu_data[i].gyro_z};
                                       
                 float C_omega_C[3] = {0};
-                matvecprod(3, 3, state_est_state->state_est_meas.imu_data->R_CS, S_omega_S, C_omega_C, true);
+                matvecprod(3, 3, state_est_state->state_est_meas.imu_data[i].R_CS, S_omega_S, C_omega_C, true);
 
                 float C_CS_mult_S_a_S[3] = {0};
-                matvecprod(3, 3, state_est_state->state_est_meas.imu_data->R_CS, S_a_S, C_CS_mult_S_a_S, true);
+                matvecprod(3, 3, state_est_state->state_est_meas.imu_data[i].R_CS, S_a_S, C_CS_mult_S_a_S, true);
                 float C_omega_C_cross_C_r_CS[3] = {0};
-                veccrossprod(C_omega_C, state_est_state->state_est_meas.imu_data->C_r_CS, C_omega_C_cross_C_r_CS);
+                veccrossprod(C_omega_C, state_est_state->state_est_meas.imu_data[i].C_r_CS, C_omega_C_cross_C_r_CS);
                 float C_omega_C_cross_C_omega_C_cross_C_r_CS[3] = {0};
                 veccrossprod(C_omega_C, C_omega_C_cross_C_r_CS, C_omega_C_cross_C_omega_C_cross_C_r_CS);
                 float C_a_C[3] = {0};

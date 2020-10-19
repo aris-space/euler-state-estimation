@@ -556,14 +556,14 @@ void vec_body_to_world_rotation(float Q[4], float vec_body[3], float vec_world[3
     matvecprod(3, 3, R, vec_body, vec_world, true);
 }
 
-void vec_world_to_body_rotation(float Q[3], float vec_world[3], float rotated_vector[3]) {
+void vec_world_to_body_rotation(float Q[4], float vec_world[3], float rotated_vector[3]) {
     float R[3][3] = {0};
     world_to_body_rotation_matrix(Q, R);
     
     matvecprod(3, 3, R, vec_world, rotated_vector, true);
 }
 
-void cov_body_to_world_rotation(float Q[3], float cov_world[3][3], float cov_body[3][3]) {
+void cov_body_to_world_rotation(float Q[4], float cov_world[3][3], float cov_body[3][3]) {
     float R[3][3] = {0};
     world_to_body_rotation_matrix(Q, R);
 
@@ -575,7 +575,7 @@ void cov_body_to_world_rotation(float Q[3], float cov_world[3][3], float cov_bod
     matmul(3, 3, 3, R_mult_cov, R_T, cov_body, true);
 }
 
-void cov_world_to_body_rotation(float Q[3], float cov_world[3][3], float cov_body[3][3]) {
+void cov_world_to_body_rotation(float Q[4], float cov_world[3][3], float cov_body[3][3]) {
     float R[3][3] = {0};
     world_to_body_rotation_matrix(Q, R);
 

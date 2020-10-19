@@ -42,6 +42,9 @@ void scalarmatprod(int m, int n, float scalar, float A[m][n], float B[m][n]);
 /* Calculates sum of all element in the vector */
 float vecsum(int n, float a[n]);
 
+/* Calculates the cross product of two vectors */
+void veccrossprod(float a[3], float b[3], float c[3]);
+
 /* Function to get cofactor of A[p][q] in temp[][]. n is current dimension of A[][] */
 void cofactor(int dim, float A[dim][dim], float temp[dim][dim], int p, int q, int n);
 
@@ -81,5 +84,26 @@ int polyfit(const float* const dependentValues, const float* const independentVa
             unsigned int countOfElements, unsigned int order, double* coefficients);
 
 void discretize(float frequency, int n, int m, float A[n][n], float B[n][m], float Ad[n][n], float Bd[n][m]);
+
+void body_to_world_rotation_matrix(float Q[4], float rotation_matrix[3][3]);
+
+void world_to_body_rotation_matrix(float Q[4], float rotation_matrix[3][3]);
+
+void vec_body_to_world_rotation(float Q[4], float vec_body[3], float vec_world[3]);
+
+void vec_world_to_body_rotation(float Q[4], float vec_world[3], float rotated_vector[3]);
+
+void cov_body_to_world_rotation(float Q[4], float cov_world[3][3], float cov_body[3][3]);
+
+void cov_world_to_body_rotation(float Q[4], float cov_world[3][3], float cov_body[3][3]);
+
+void zyx_euler_to_quarternion(float zyx_euler[3], float quarternion[4]);
+
+void W_to_Qdot(float Q[4], float W[3], float Qdot[4]);
+
+void cov_W_to_cov_Qdot(float Q[4], float cov_W[3][3], float cov_Qdot[4][4]);
+
+/* keep angles between -pi and +pi */
+void unwrap_angles(int n, float a[n], float b[n]);
 
 #endif

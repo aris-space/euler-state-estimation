@@ -42,6 +42,13 @@ typedef struct {
 	float gyro_x, gyro_y, gyro_z;
 	float acc_x, acc_y, acc_z;
 	timestamp_t ts;
+
+	#if STATE_ESTIMATION_TYPE == 2
+	/* transformation matrix from the rocket coordinate system at the CoG to the sensor coordinate system */
+	float C_r_CS[3];
+	float R_CS[3][3];
+	float T_CS[4][4]; 
+	#endif
 } imu_state_est_t;
 
 /* State Estimation combined Data struct */
@@ -66,6 +73,11 @@ typedef struct {
 	int32_t altitude_raw;
 	bool altitude_raw_active;
 	int32_t airbrake_extension;
+
+	#if STATE_ESTIMATION_TYPE == 2
+	int32_t quarternion_world[4];
+	int32_t quarternion_dot_world[4];
+	#endif
 } state_est_data_t;
 
 /* FSM States */

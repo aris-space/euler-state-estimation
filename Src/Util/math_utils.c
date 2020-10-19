@@ -96,6 +96,12 @@ float vecsum(int n, float a[n]) {
 	return sum;
 }
 
+void veccrossprod(float a[3], float b[3], float c[3]) {
+    c[0] = a[1] * b[2] - a[2] * b[1];
+    c[1] = a[2] * b[0] - a[0] * b[2];
+    c[2] = a[0] * b[1] - a[1] * b[0];
+}
+
 /* Function to get cofactor of A[p][q] in temp[][]. n is current dimension of A[][] */
 /* https://www.geeksforgeeks.org/adjoint-inverse-matrix/ */
 void cofactor(int dim, float A[dim][dim], float temp[dim][dim], int p, int q, int n) 
@@ -521,4 +527,113 @@ void discretize(float frequency, int n, int m, float A[n][n], float B[n][m], flo
 
     /* Computation of Bd */
     scalarmatprod(n, m, 1.0f / frequency, B, Bd);
+}
+
+void body_to_world_rotation_matrix(float Q[4], float rotation_matrix[3][3]) {
+    /* inputs: quarternion in world coordinate system in scalar-last (x, y, z, w) format, vector in body coordinate system */
+
+    float R[3][3] = {{powf(Q[3],2)+powf(Q[0],2)-powf(Q[1],2)-powf(Q[2],2), 2*(Q[0]*Q[1]-Q[3]*Q[2]), 2*(Q[3]*Q[1]+Q[0]*Q[2])},
+                     {2*(Q[3]*Q[2]+Q[0]*Q[1]), powf(Q[3],2)-powf(Q[0],2)+powf(Q[1],2)-powf(Q[2],2), 2*(Q[1]*Q[2]-Q[3]*Q[0])},
+                     {2*(Q[0]*Q[2]-Q[3]*Q[1]), 2*(Q[3]*Q[0]+Q[1]*Q[2]), powf(Q[3],2)-powf(Q[0],2)-powf(Q[1],2)+powf(Q[2],2)}};
+
+    memcpy(rotation_matrix, R, sizeof(R));
+}
+
+void world_to_body_rotation_matrix(float Q[4], float rotation_matrix[3][3]) {
+    /* inputs: quarternion in world coordinate system in scalar-last (x, y, z, w) format, vector in world coordinate system */
+
+    float R[3][3] = {{powf(Q[3],2)+powf(Q[0],2)-powf(Q[1],2)-powf(Q[2],2), 2*(Q[3]*Q[2]+Q[0]*Q[1]), 2*(Q[0]*Q[2]-Q[3]*Q[1])},
+                     {2*(Q[0]*Q[1]-Q[3]*Q[2]), powf(Q[3],2)-powf(Q[0],2)+powf(Q[1],2)-powf(Q[2],2), 2*(Q[3]*Q[0]+Q[1]*Q[2])},
+                     {2*(Q[3]*Q[1]+Q[0]*Q[2]), 2*(Q[1]*Q[2]-Q[3]*Q[0]), powf(Q[3],2)-powf(Q[0],2)-powf(Q[1],2)+powf(Q[2],2)}};
+
+    memcpy(rotation_matrix, R, sizeof(R));
+}
+
+void vec_body_to_world_rotation(float Q[4], float vec_body[3], float vec_world[3]) {
+    float R[3][3] = {0};
+    body_to_world_rotation_matrix(Q, R);
+    
+    matvecprod(3, 3, R, vec_body, vec_world, true);
+}
+
+void vec_world_to_body_rotation(float Q[4], float vec_world[3], float rotated_vector[3]) {
+    float R[3][3] = {0};
+    world_to_body_rotation_matrix(Q, R);
+    
+    matvecprod(3, 3, R, vec_world, rotated_vector, true);
+}
+
+void cov_body_to_world_rotation(float Q[4], float cov_world[3][3], float cov_body[3][3]) {
+    float R[3][3] = {0};
+    body_to_world_rotation_matrix(Q, R);
+
+    float R_T[3][3] = {0};
+    transpose(3, 3, R, R_T);
+
+    float R_mult_cov[3][3] = {0};
+    matmul(3, 3, 3, R, cov_world, R_mult_cov, true);
+    matmul(3, 3, 3, R_mult_cov, R_T, cov_body, true);
+}
+
+void cov_world_to_body_rotation(float Q[4], float cov_world[3][3], float cov_body[3][3]) {
+    float R[3][3] = {0};
+    world_to_body_rotation_matrix(Q, R);
+
+    float R_T[3][3] = {0};
+    transpose(3, 3, R, R_T);
+
+    float R_mult_cov[3][3] = {0};
+    matmul(3, 3, 3, R, cov_world, R_mult_cov, true);
+    matmul(3, 3, 3, R_mult_cov, R_T, cov_body, true);
+}
+
+void zyx_euler_to_quarternion(float zyx_euler[3], float quarternion[4]) {
+    // Abbreviations for the various angular functions
+    float cy = cosf(zyx_euler[2] * 0.5);
+    float sy = sinf(zyx_euler[2] * 0.5);
+    float cp = cosf(zyx_euler[1] * 0.5);
+    float sp = sinf(zyx_euler[1] * 0.5);
+    float cr = cosf(zyx_euler[0] * 0.5);
+    float sr = sinf(zyx_euler[0] * 0.5);
+
+    /* quarternion in scalar-last (x, y, z, w) format */
+    quarternion[0] = sr * cp * cy - cr * sp * sy;
+    quarternion[1] = cr * sp * cy + sr * cp * sy;
+    quarternion[2] = cr * cp * sy - sr * sp * cy;
+    quarternion[3] = cr * cp * cy + sr * sp * sy;
+}
+
+void W_to_Qdot(float Q[4], float W[3], float Qdot[4]) {
+    float H[3][4] = {{Q[3], -Q[2], Q[1], -Q[0]}, 
+                     {Q[2], Q[3], -Q[0], -Q[1]}, 
+                     {-Q[1], Q[0], Q[3], -Q[2]}};
+
+    float H_T[4][3] = {0};
+    transpose(3, 4, H, H_T);
+
+    matvecprod(4, 3, H_T, W, Qdot, true);
+    scalarvecprod(4, 0.5, Qdot, Qdot);
+}
+
+void cov_W_to_cov_Qdot(float Q[4], float cov_W[3][3], float cov_Qdot[4][4]) {
+    float H[3][4] = {{Q[3], -Q[2], Q[1], -Q[0]}, 
+                     {Q[2], Q[3], -Q[0], -Q[1]}, 
+                     {-Q[1], Q[0], Q[3], -Q[2]}};
+                     
+    float H_T[4][3] = {0};
+    transpose(3, 4, H, H_T);
+
+    float H_T_mult_cov_W[4][3] = {0};
+    matmul(4, 3, 3, H_T, cov_W, H_T_mult_cov_W, true);
+    matmul(4, 3, 4, H_T_mult_cov_W, H, cov_Qdot, true);
+    scalarmatprod(4, 4, 0.5, cov_Qdot, cov_Qdot);
+}
+
+/* keep angles between -pi and +pi */
+void unwrap_angles(int n, float a[n], float b[n]) {
+    for (int i = 0; i < n; i++) {
+        b[i] = a[i];
+        while (b[i] <= -M_PI) b[i] += 2 * M_PI;
+        while (b[i] > M_PI) b[i] -= 2 * M_PI;
+    }
 }

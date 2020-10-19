@@ -70,7 +70,7 @@ void reset_kf_state(kf_state_t *kf_state){
         for(int i = 0; i < 3; i++) {
             A[i][3+i] = 1;
         }
-        for(int i = 0; i < 6; i++) {
+        for(int i = 0; i < 7; i++) {
             B[3+i][i] = 1;
         }
 
@@ -78,15 +78,27 @@ void reset_kf_state(kf_state_t *kf_state){
         memcpy(&kf_state->Gd, &kf_state->Bd, sizeof(kf_state->Bd));
 
         float x_est_init[NUMBER_STATES] = {0};
+
         /* we are setting the initial pitch angle to the launch rail angle */
-        x_est_init[7] = -LAUNCH_RAIL_ANGLE / 180 * M_PI;
-
+        float attitude_world_init[3] = {0, -LAUNCH_RAIL_ANGLE / 180 * M_PI, 0} ;
+        float quarternion_world_init[4] = {0};
+        zyx_euler_to_quarternion(attitude_world_init, quarternion_world_init);
+        
 	    float P_est_init[NUMBER_STATES][NUMBER_STATES] = {0};
-
+        float cov_W_init[3][3] = {0};
         for (int i = 0; i < 3; i++) {
             P_est_init[i][i] = 1.0E-9;
             P_est_init[3+i][3+i] = 1.0E-12;
-            P_est_init[6+i][6+i] = 1.0E-3;
+            cov_W_init[i][i] = 1.0E-3;
+        }
+
+        float cov_Qdot_init[4][4] = {0};
+        cov_W_to_cov_Qdot(quarternion_world_init, cov_W_init, cov_Qdot_init);
+        for (int i = 0; i < 4; i++) {
+            x_est_init[6+i] = quarternion_world_init[i];
+            for (int j = 0; j < 4; j++) {
+                P_est_init[6+i][6+j] = cov_Qdot_init[i][j];
+            }
         }
     #endif
 

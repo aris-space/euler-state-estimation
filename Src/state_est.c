@@ -37,15 +37,7 @@ void state_est_step(timestamp_t t, state_est_state_t *state_est_state, bool bool
 	select_noise_models(state_est_state);
 	
 	kf_prediction(&state_est_state->kf_state);
-
-    #if STATE_ESTIMATION_TYPE == 2
-        float attitude_priori[3] = {state_est_state->kf_state.x_priori[6], state_est_state->kf_state.x_priori[7], state_est_state->kf_state.x_priori[8]};
-        unwrap_angles(3, attitude_priori, attitude_priori);
-        for (int i; i < 3; i++) {
-            state_est_state->kf_state.x_priori[6+i] = attitude_priori[i];
-        }
-    #endif
-
+    
 	if (state_est_state->kf_state.num_z_active > 0) {
 		select_kf_observation_matrices(&state_est_state->kf_state);
 		kf_update(&state_est_state->kf_state);
@@ -99,22 +91,21 @@ void update_state_est_data(state_est_state_t *state_est_state) {
         state_est_state->state_est_data.mach_number = (int32_t)(mach_number(&state_est_state->env, state_est_state->kf_state.x_est[1]) * 1000000);
     #elif STATE_ESTIMATION_TYPE == 2
         float velocity_world[3] = {state_est_state->kf_state.x_est[3], state_est_state->kf_state.x_est[4], state_est_state->kf_state.x_est[5]};
-        float attitude_world[3] = {state_est_state->kf_state.x_est[6], state_est_state->kf_state.x_est[7], state_est_state->kf_state.x_est[8]};
         float acceleration_world[3] = {state_est_state->kf_state.u[0], state_est_state->kf_state.u[1], state_est_state->kf_state.u[2]};
+        float quarternion_world[4] = {state_est_state->kf_state.x_est[6], state_est_state->kf_state.x_est[7], state_est_state->kf_state.x_est[8], state_est_state->kf_state.x_est[9]};
         float angular_velocity_world[3] = {state_est_state->kf_state.u[3], state_est_state->kf_state.u[4], state_est_state->kf_state.u[5]};
 
         float velocity_rocket[3] = {0};
-        vec_world_to_body_rotation(attitude_world, velocity_world, velocity_rocket);
+        vec_world_to_body_rotation(quarternion_world, velocity_world, velocity_rocket);
 
         float angular_velocity_rocket[3] = {0};
-        vec_world_to_body_rotation(attitude_world, angular_velocity_world, angular_velocity_rocket);
+        vec_world_to_body_rotation(quarternion_world, angular_velocity_world, angular_velocity_rocket);
 
         float acceleration_rocket[3] = {0};
-        vec_world_to_body_rotation(attitude_world, acceleration_world, acceleration_rocket);
+        vec_world_to_body_rotation(quarternion_world, acceleration_world, acceleration_rocket);
 
         for (int i = 0; i < 3; i++) {
             state_est_state->state_est_data.position_world[i] = (int32_t)(state_est_state->kf_state.x_est[i] * 1000);
-            state_est_state->state_est_data.attitude_world[i] = (int32_t)(attitude_world[i] * 1000000);
             state_est_state->state_est_data.velocity_world[i] = (int32_t)(velocity_world[i] * 1000);
             state_est_state->state_est_data.velocity_rocket[i] = (int32_t)(velocity_rocket[i] * 1000);
             state_est_state->state_est_data.angular_velocity_world[i] = (int32_t)(angular_velocity_world[i] * 1000000);
@@ -122,6 +113,10 @@ void update_state_est_data(state_est_state_t *state_est_state) {
             state_est_state->state_est_data.acceleration_world[i] = (int32_t)(acceleration_world[i] * 1000);
             state_est_state->state_est_data.acceleration_rocket[i] = (int32_t)(acceleration_rocket[i] * 1000);
         }
+
+        for (int i = 0; i < 4; i++) {
+            state_est_state->state_est_data.quarternion_world[i] = (int32_t)(quarternion_world[i] * 1000000);
+        }        
     #endif
 }
 
@@ -311,7 +306,6 @@ void process_measurements(timestamp_t t, state_est_state_t *state_est_state) {
         #endif
     }
     for (int i = 0; i < NUMBER_INPUTS; i++){
-        /* we take the old acceleration from the previous timestep, if no acceleration measurements are active */
         if (num_u_active[i] > 0){
             u_rocket[i] /= num_u_active[i];
         }
@@ -324,15 +318,20 @@ void process_measurements(timestamp_t t, state_est_state_t *state_est_state) {
         float acc_rocket[3] = {u_rocket[0], u_rocket[1], u_rocket[2]};
         float gyro_rocket[3] = {u_rocket[3], u_rocket[4], u_rocket[5]};
         float acc_world[3], gyro_world[3];
-        float attitude_world[3] = {state_est_state->kf_state.x_est[6], state_est_state->kf_state.x_est[7], state_est_state->kf_state.x_est[8]};
-        vec_body_to_world_rotation(attitude_world, acc_rocket, acc_world);
-        vec_body_to_world_rotation(attitude_world, gyro_rocket, gyro_world);
+        float quarternion_world[4] = {state_est_state->kf_state.x_est[6], state_est_state->kf_state.x_est[7], state_est_state->kf_state.x_est[8], state_est_state->kf_state.x_est[9]};
+        vec_body_to_world_rotation(quarternion_world, acc_rocket, acc_world);
+        vec_body_to_world_rotation(quarternion_world, gyro_rocket, gyro_world);
 
         acc_world[2] -= GRAVITATION;
+
+        float Qdot_world[4] = {0};
+        W_to_Qdot(quarternion_world, gyro_world, Qdot_world);
         
         for (int i = 0; i < 3; i++) {
             state_est_state->kf_state.u[i] = acc_world[i];
-            state_est_state->kf_state.u[3+i] = gyro_world[i];
+        }
+        for (int i = 0; i < 4; i++) {
+            state_est_state->kf_state.u[3+i] = Qdot_world[i];
         }
     #endif
 
@@ -449,13 +448,21 @@ void select_noise_models(state_est_state_t *state_est_state) {
 
         float Q_upper_world[3][3] = {0};
         float Q_lower_world[3][3] = {0};
-        float attitude_world[3] = {state_est_state->kf_state.x_est[6], state_est_state->kf_state.x_est[7], state_est_state->kf_state.x_est[8]};
-        cov_body_to_world_rotation(attitude_world, Q_upper_rocket, Q_upper_world);
-        cov_body_to_world_rotation(attitude_world, Q_lower_rocket, Q_lower_world);
+        
+        float quarternion_world[4] = {state_est_state->kf_state.x_est[6], state_est_state->kf_state.x_est[7], state_est_state->kf_state.x_est[8], state_est_state->kf_state.x_est[9]};
+        
+        cov_body_to_world_rotation(quarternion_world, Q_upper_rocket, Q_upper_world);
+        cov_body_to_world_rotation(quarternion_world, Q_lower_rocket, Q_lower_world);
+
+        /* transform covariance in rad in world coordinate system to quarternions */
+        float Q_lower_quat[4][4] = {0};
+        cov_W_to_cov_Qdot(quarternion_world, Q_lower_world, Q_lower_quat);
 
         for (int i = 0; i < 3; i++) {
             state_est_state->kf_state.Q[i][i] = Q_upper_world[i][i];
-            state_est_state->kf_state.Q[3+i][3+i] = Q_lower_world[i][i];
+        }
+        for (int i = 0; i < 4; i++) {
+            state_est_state->kf_state.Q[3+i][3+i] = Q_lower_quat[i][i];
         }
     #endif
 

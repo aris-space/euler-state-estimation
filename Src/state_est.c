@@ -385,10 +385,10 @@ void select_noise_models(state_est_state_t *state_est_state) {
     float acc_stdev_rocket[3] = {0};
     float baro_stdev = 0;
 
-    float gyro_stdev = 0.001; // noise stdev which scales proportionally with the norm of the angular velocity
+    float gyro_stdev_norm = 0.01; // noise stdev which scales proportionally with the norm of the angular velocity
     /* we set a minimal angular velocity norm of 0.1 rad/s */
     float omega_norm = max(euclidean_norm(3, state_est_state->processed_measurements.angular_velocity_world), 0.1);
-    float gyro_stdev_rocket[3] = {omega_norm * gyro_stdev, omega_norm*gyro_stdev, omega_norm*gyro_stdev};
+    float gyro_stdev_rocket[3] = {omega_norm * gyro_stdev_norm, omega_norm*gyro_stdev_norm, omega_norm*gyro_stdev_norm};
 
     switch (state_est_state->flight_phase_detection.flight_phase) {
         case AIRBRAKE_TEST:

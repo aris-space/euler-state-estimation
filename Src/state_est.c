@@ -6,6 +6,7 @@ void reset_state_est_state(float p_g, float T_g, state_est_state_t *state_est_st
     memset(&state_est_state->state_est_data, 0, sizeof(state_est_state->state_est_data));
     memset(&state_est_state->state_est_meas, 0, sizeof(state_est_state->state_est_meas));
     memset(&state_est_state->state_est_meas_prior, 0, sizeof(state_est_state->state_est_meas_prior));
+    memset(&state_est_state->processed_measurements, 0, sizeof(state_est_state->processed_measurements));
 
     #if STATE_ESTIMATION_TYPE == 2
         init_sensor_transformation_matrix(state_est_state);
@@ -330,6 +331,10 @@ void process_measurements(timestamp_t t, state_est_state_t *state_est_state) {
 
         acc_world[2] -= GRAVITATION;
 
+        for (int i = 0; i < 3; i++) {
+            state_est_state->processed_measurements.angular_velocity_world[i] = gyro_world[i];
+        }
+
         float Qdot_world[4] = {0};
         W_to_Qdot(quarternion_world, gyro_world, Qdot_world);
         
@@ -378,8 +383,12 @@ void process_measurements(timestamp_t t, state_est_state_t *state_est_state) {
 
 void select_noise_models(state_est_state_t *state_est_state) {
     float acc_stdev_rocket[3] = {0};
-    float gyro_stdev_rocket[3] = {0.00872665, 0.00872665, 0.00872665}; // TODO: insert noise-modelled values
     float baro_stdev = 0;
+
+    float gyro_stdev = 0.001; // noise stdev which scales proportionally with the norm of the angular velocity
+    /* we set a minimal angular velocity norm of 0.1 rad/s */
+    float omega_norm = max(euclidean_norm(3, state_est_state->processed_measurements.angular_velocity_world), 0.1);
+    float gyro_stdev_rocket[3] = {omega_norm * gyro_stdev, omega_norm*gyro_stdev, omega_norm*gyro_stdev};
 
     switch (state_est_state->flight_phase_detection.flight_phase) {
         case AIRBRAKE_TEST:

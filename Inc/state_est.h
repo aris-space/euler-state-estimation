@@ -11,6 +11,11 @@
 #ifndef STATE_EST_H_
 #define STATE_EST_H_
 
+/* moving average memory */
+typedef struct state_est_processed_measurements_t {
+    float angular_velocity_world[3];
+} state_est_processed_measurements_t;
+
 typedef struct extrapolation_rolling_memory_t {
     int memory_length;
     float timestamps[MAX_LENGTH_ROLLING_MEMORY];
@@ -31,6 +36,7 @@ typedef struct state_est_state_t {
     state_est_data_t state_est_data;
     state_est_meas_t state_est_meas;
     state_est_meas_t state_est_meas_prior;
+    state_est_processed_measurements_t processed_measurements;
     kf_state_t kf_state;
     env_t env;
     flight_phase_detection_t flight_phase_detection;

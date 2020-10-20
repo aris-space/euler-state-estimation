@@ -70,7 +70,7 @@ void reset_kf_state(kf_state_t *kf_state){
         for(int i = 0; i < 3; i++) {
             A[i][3+i] = 1;
         }
-        for(int i = 0; i < 7; i++) {
+        for(int i = 0; i < NUMBER_INPUTS; i++) {
             B[3+i][i] = 1;
         }
 
@@ -102,8 +102,8 @@ void reset_kf_state(kf_state_t *kf_state){
         }
     #endif
 
-    memcpy(kf_state->x_est, x_est_init, sizeof(x_est_init));
-    memcpy(kf_state->P_est, P_est_init, sizeof(P_est_init));
+    memcpy(&kf_state->x_est, &x_est_init, sizeof(x_est_init));
+    memcpy(&kf_state->P_est, &P_est_init, sizeof(P_est_init));
 
     memset(kf_state->Q, 0, NUMBER_PROCESS_NOISE*NUMBER_PROCESS_NOISE*sizeof(kf_state->Q[0][0]));
     memset(kf_state->R, 0, NUMBER_MEASUREMENTS*NUMBER_MEASUREMENTS*sizeof(kf_state->R[0][0]));

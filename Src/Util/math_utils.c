@@ -193,7 +193,7 @@ void adjoint(int dim, float A[dim][dim], float adj[dim][dim])
 
 float euclidean_norm(int n, float a[n]) {
     float sum = 0;
-    for (int i; i < n; i++) {
+    for (int i = 0; i < n; i++) {
         sum += powf(a[i], 2);
     }
 

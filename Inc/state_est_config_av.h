@@ -12,7 +12,7 @@
 #define NUM_BARO 3
 
 #define LAUNCH_RAIL_ANGLE 90.0f // launch rail angle in degrees
-#define X_COG 2.081f // longitudinal distance from tip nose-cone to the CoG of the rocket [m]
+#define X_COG 2.262f // longitudinal distance from tip nose-cone to the CoG of the rocket [m]
 #define X_IMU 2.0476680f // longitudinal distance from the tip of the nose-cone to the IMU sensors [m]
 #define X_BARO 2.0476680f // longitudinal distance from the tip of the nose-cone to the barometric sensors [m]
 #define R_IMU 0.023f // radial offset of the IMU sensors from the center axis of the rocket [m]
@@ -22,7 +22,7 @@
 #define FPD_LIFTOFF_ACC_THRESH 20 // acceleration threshold to detect lift-off and enter thrusting flight phase [m/s^2]
 #define FPD_LIFTOFF_ALT_THRESH 150 // altitude above ground level to detect lift-off and enter thrusting flight phase [m]
 #define FPD_CONTROL_ACTIVE true // use control flight phases such as CONTROL, BIAS_RESET or APOGEE_APPROACH
-#define FPD_CONTROL_ACTIVATION_MACH_NUMBER 0.9 // the controller is activated below this mach number [mach]
+#define FPD_CONTROL_ACTIVATION_MACH_NUMBER 0.7 // the controller is activated below this mach number [mach]
 #define FPD_CONTROL_DEACTIVATION_MACH_NUMBER 0.1 // the apogee approach phase is activated below this mach number [mach]
 #define FPD_BIAS_RESET_ACTIVATION_MACH_NUMBER 0 // the bias reset window is activated below this mach number[mach]
 #define FPD_BIAS_RESET_TIME 0 // duration of the bias reset window. Set it to 0s to not use the bias reset window [s]

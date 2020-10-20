@@ -37,6 +37,17 @@ void state_est_step(timestamp_t t, state_est_state_t *state_est_state, bool bool
 	select_noise_models(state_est_state);
 	
 	kf_prediction(&state_est_state->kf_state);
+
+    #if STATE_ESTIMATION_TYPE == 2
+        float quarternion_world[4] = {0};
+        for (int i = 0; i < 4; i++) {
+            quarternion_world[i] = state_est_state->kf_state.x_priori[6+i];
+        }
+        normalize_quarternion(quarternion_world);
+        for (int i = 0; i < 4; i++) {
+            state_est_state->kf_state.x_priori[6+i] = quarternion_world[i];
+        }
+    #endif
     
 	if (state_est_state->kf_state.num_z_active > 0) {
 		select_kf_observation_matrices(&state_est_state->kf_state);

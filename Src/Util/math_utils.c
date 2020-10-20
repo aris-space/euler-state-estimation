@@ -529,6 +529,13 @@ void discretize(float frequency, int n, int m, float A[n][n], float B[n][m], flo
     scalarmatprod(n, m, 1.0f / frequency, B, Bd);
 }
 
+void normalize_quarternion(float Q[4]) {
+    float magnitude = sqrtf(powf(Q[0],2) + powf(Q[1],2) + powf(Q[2],2) + powf(Q[3],2));
+    for (int i = 0; i < 4; i++) {
+        Q[i] /= magnitude;
+    }
+}
+
 void body_to_world_rotation_matrix(float Q[4], float rotation_matrix[3][3]) {
     /* inputs: quarternion in world coordinate system in scalar-last (x, y, z, w) format, vector in body coordinate system */
 

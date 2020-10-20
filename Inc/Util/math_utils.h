@@ -85,6 +85,8 @@ int polyfit(const float* const dependentValues, const float* const independentVa
 
 void discretize(float frequency, int n, int m, float A[n][n], float B[n][m], float Ad[n][n], float Bd[n][m]);
 
+void normalize_quarternion(float Q[4]);
+
 void body_to_world_rotation_matrix(float Q[4], float rotation_matrix[3][3]);
 
 void world_to_body_rotation_matrix(float Q[4], float rotation_matrix[3][3]);

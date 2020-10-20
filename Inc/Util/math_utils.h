@@ -54,6 +54,9 @@ float determinant(int dim, float A[dim][dim], int n);
 /* Function to get adjoint of A[dim][dim] in adj[dim][dim]. */
 void adjoint(int dim, float A[dim][dim], float adj[dim][dim]);
 
+/* Euclidean norm */
+float euclidean_norm(int n, float a[n]);
+
 /* Function to calculate and store inverse, returns false if matrix is singular */
 bool inverse(int dim, float A[dim][dim], float inverse[dim][dim], float lambda);
 

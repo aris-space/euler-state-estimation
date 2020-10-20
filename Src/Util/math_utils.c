@@ -189,7 +189,16 @@ void adjoint(int dim, float A[dim][dim], float adj[dim][dim])
             adj[j][i] = (sign)*(determinant(dim, temp, dim-1)); 
         } 
     } 
-} 
+}
+
+float euclidean_norm(int n, float a[n]) {
+    float sum = 0;
+    for (int i; i < n; i++) {
+        sum += powf(a[i], 2);
+    }
+
+    return sqrtf(sum);
+}
   
 /* Function to calculate and store inverse, returns false if matrix is singular */
 /* https://www.geeksforgeeks.org/adjoint-inverse-matrix/ */
@@ -530,7 +539,7 @@ void discretize(float frequency, int n, int m, float A[n][n], float B[n][m], flo
 }
 
 void normalize_quarternion(float Q[4]) {
-    float magnitude = sqrtf(powf(Q[0],2) + powf(Q[1],2) + powf(Q[2],2) + powf(Q[3],2));
+    float magnitude = euclidean_norm(4, Q);
     for (int i = 0; i < 4; i++) {
         Q[i] /= magnitude;
     }

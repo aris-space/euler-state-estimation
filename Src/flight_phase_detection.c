@@ -140,7 +140,7 @@ void detect_flight_phase(timestamp_t t, flight_phase_detection_t *flight_phase_d
             /* we assume a ballistic descent when the absolute velocity of the rocket in vertical direction is larger than 75 m/s */
             else if (fabs(((float)(state_est_data->velocity_world[2])) / 1000) > FPD_BALLISTIC_VEL_THRESH_HIGH) {
                 flight_phase_detection->safety_counter[1] += 1;
-                if (flight_phase_detection->safety_counter[1] >= FPD_SAFETY_COUNTER_THRESH) {
+                if (flight_phase_detection->safety_counter[1] >= FPD_BALLISTIC_SAFETY_COUNTER_THRESH) {
                     flight_phase_detection->flight_phase = BALLISTIC_DESCENT;
                     flight_phase_detection->safety_counter[0] = 0;
                     flight_phase_detection->safety_counter[1] = 0;
@@ -165,7 +165,7 @@ void detect_flight_phase(timestamp_t t, flight_phase_detection_t *flight_phase_d
             /* we assume a ballistic descent when the absolute velocity of the rocket in vertical direction is larger than 75 m/s */
             else if (fabs(((float)(state_est_data->velocity_world[2])) / 1000) > FPD_BALLISTIC_VEL_THRESH_HIGH) {
                 flight_phase_detection->safety_counter[1] += 1;
-                if (flight_phase_detection->safety_counter[1] >= FPD_SAFETY_COUNTER_THRESH) {
+                if (flight_phase_detection->safety_counter[1] >= FPD_BALLISTIC_SAFETY_COUNTER_THRESH) {
                     flight_phase_detection->flight_phase = BALLISTIC_DESCENT;
                     flight_phase_detection->safety_counter[0] = 0;
                     flight_phase_detection->safety_counter[1] = 0;

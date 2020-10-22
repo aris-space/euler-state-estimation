@@ -27,6 +27,7 @@
 #define FPD_BIAS_RESET_TIME 0 // duration of the bias reset window. Set it to 0s to not use the bias reset window [s]
 #define FPD_MAIN_DESCENT_ALT_THRESH 400 // altitude above ground level to enter main descent and activate the main parachute in [m]
 #define FPD_BALLISTIC_ACTIVE true // wether to use ballistic flight phase
+#define FPD_BALLISTIC_SAFETY_COUNTER_THRESH 100 // how many (non-consecutive) measurements are required to detect ballistic flight
 #define FPD_BALLISTIC_VEL_THRESH_HIGH 75 // upper velocity threshold to enter ballistic flight phase in [m/s]
 #define FPD_BALLISTIC_VEL_THRESH_LOW 60 // lower velocity threshold to leave ballistic flight phase in [m/s]
 #define FPD_TOUCHDOWN_SAFETY_COUNTER_THRESH 20 // how many (non-consecutive) measurements are required to detect touchdown
